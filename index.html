@@ -304,6 +304,25 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 .upload-box{ background:var(--surface-2); border-radius:20px; padding:16px; }
 .upload-box .form-grid{ margin-bottom:12px; }
 
+/* abas e treinamentos */
+.abas{ display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
+.aba{ border:none; background:var(--surface-2); color:var(--ink-soft); border-radius:999px; padding:8px 16px; font-size:.84rem; font-weight:700; cursor:pointer; transition:background .15s, color .15s; }
+.aba:hover{ background:var(--line); }
+.aba.ativa{ background:var(--accent); color:#fff; }
+.lista-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:14px; }
+.trilha-card{ border:1px solid var(--line); border-radius:22px; padding:16px 18px; background:var(--surface); box-shadow:var(--shadow-card); }
+.trilha-card h3{ font-size:.95rem; font-weight:800; margin-bottom:2px; }
+.trilha-card .tc-sub{ font-size:.76rem; color:var(--muted); margin-bottom:10px; }
+.trilha-card ul{ margin:0 0 12px; padding-left:18px; font-size:.82rem; color:var(--ink-soft); }
+.chk-lista{ display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto; border:1px solid var(--line); border-radius:14px; padding:10px 12px; }
+.chk-lista label{ display:flex; align-items:center; gap:8px; font-size:.84rem; cursor:pointer; }
+.part-linha{ display:grid; grid-template-columns:1fr 130px 70px 32px; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid var(--line-soft); font-size:.84rem; }
+.part-linha select, .part-linha input{ border:1px solid var(--line); background:var(--surface); border-radius:10px; padding:5px 8px; font-size:.8rem; min-height:32px; width:100%; }
+.part-linha .rm{ all:unset; cursor:pointer; color:var(--muted-2); text-align:center; border-radius:8px; height:28px; }
+.part-linha .rm:hover{ background:var(--bad-soft); color:var(--bad); }
+.aviso-cap{ background:var(--warn-soft); color:var(--warn); border-radius:12px; padding:8px 12px; font-size:.8rem; font-weight:600; margin-bottom:10px; }
+@media (max-width:560px){ .part-linha{ grid-template-columns:1fr 1fr; } }
+
 /* impressão / PDF */
 @media print{
   .sidebar, .mobile-header, .mobile-bottom-nav, .head-actions, .filtros, .s-user-dropdown, .toast{ display:none !important; }
@@ -345,6 +364,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
     <symbol id="i-org" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="5" rx="1.5"/><rect x="2.5" y="16" width="6" height="5" rx="1.5"/><rect x="15.5" y="16" width="6" height="5" rx="1.5"/><path d="M12 8v4M5.5 16v-4h13v4"/></symbol>
     <symbol id="i-pessoas" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.2c2.6.2 4.5 2 4.5 5.3"/></symbol>
     <symbol id="i-olho" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-livro" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M8 3v16M12 8h4"/></symbol>
     <symbol id="i-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
   </defs>
 </svg>
@@ -373,6 +393,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
       <a class="s-link active" data-page="painel" href="#painel"><span class="ico"><svg width="17" height="17"><use href="#i-painel"/></svg></span><span class="s-label">Painel de vagas</span></a>
       <a class="s-link" data-page="vagas" href="#vagas"><span class="ico"><svg width="17" height="17"><use href="#i-vagas"/></svg></span><span class="s-label">Vagas</span></a>
       <a class="s-link" data-page="colaboradores" href="#colaboradores"><span class="ico"><svg width="17" height="17"><use href="#i-pessoas"/></svg></span><span class="s-label">Colaboradores</span></a>
+      <a class="s-link" data-page="treinamentos" href="#treinamentos"><span class="ico"><svg width="17" height="17"><use href="#i-livro"/></svg></span><span class="s-label">Treinamentos</span></a>
       <a class="s-link" data-page="organograma" href="#organograma"><span class="ico"><svg width="17" height="17"><use href="#i-org"/></svg></span><span class="s-label">Organograma</span></a>
     </nav>
     <div class="s-foot">
@@ -436,6 +457,27 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
       <div class="filtros" id="filtros-vagas"></div>
       <div class="tabela-wrap"><div class="tabela-scroll" id="t-vagas"></div></div>
     </section>
+    <!-- ===== Treinamentos ===== -->
+    <section class="page" id="page-treinamentos" hidden>
+      <div class="page-head">
+        <div>
+          <h1>Treinamentos</h1>
+          <p id="trein-sub">Cursos, trilhas, agenda e vencimentos</p>
+        </div>
+        <div class="head-actions" id="trein-acoes"></div>
+      </div>
+      <div class="abas" id="trein-abas">
+        <button class="aba" data-aba="geral">Visão geral</button>
+        <button class="aba" data-aba="pendencias">Pendências</button>
+        <button class="aba" data-aba="agenda">Agenda</button>
+        <button class="aba" data-aba="catalogo">Catálogo</button>
+      </div>
+      <div id="trein-geral"></div>
+      <div id="trein-pendencias" hidden></div>
+      <div id="trein-agenda" hidden></div>
+      <div id="trein-catalogo" hidden></div>
+    </section>
+
     <!-- ===== Organograma ===== -->
     <section class="page" id="page-organograma" hidden>
       <div class="page-head">
@@ -525,6 +567,21 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
   </div>
 </div>
 
+<!-- modal genérico (formulários de treinamento) -->
+<div class="modal-overlay" id="modal-g" hidden>
+  <div class="modal-card largo" id="modal-g-card">
+    <div class="modal-card-scroll">
+      <div class="modal-head">
+        <h2 id="g-titulo"></h2>
+        <button type="button" class="modal-close" data-fechar aria-label="Fechar"><svg width="18" height="18"><use href="#i-x"/></svg></button>
+      </div>
+      <div id="g-corpo"></div>
+      <div class="erro-form" id="g-erro" hidden></div>
+      <div class="modal-actions" id="g-acoes"></div>
+    </div>
+  </div>
+</div>
+
 <!-- modal: ficha do colaborador (dados + documentos) -->
 <div class="modal-overlay" id="modal-colab" hidden>
   <div class="modal-card largo">
@@ -534,6 +591,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
         <button type="button" class="modal-close" data-fechar aria-label="Fechar"><svg width="18" height="18"><use href="#i-x"/></svg></button>
       </div>
       <div id="colab-corpo"></div>
+      <div id="colab-trein"></div>
       <div id="colab-docs-wrap" hidden>
         <div class="sec-tit">Documentos</div>
         <div class="doc-lista" id="doc-lista"></div>
@@ -696,7 +754,7 @@ async function consulta(fn){
 
 async function carregarBaseInicial(){
   var res = await Promise.all([
-    consulta(function(){ return sb.from('config').select('sla_dias,dias_critica').maybeSingle(); }),
+    consulta(function(){ return sb.from('config').select('sla_dias,dias_critica,dias_alerta_vencimento').maybeSingle(); }),
     consulta(function(){ return sb.rpc('filiais'); }),
     consulta(function(){ return sb.rpc('gestores'); }),
     consulta(function(){ return sb.from('origens').select('id,nome,ativo').order('nome'); }),
@@ -727,6 +785,8 @@ async function iniciar(){
     await carregarBaseInicial();
     try { await carregarColaboradores(); montarFiltrosColab(); }
     catch (e2) { console.error(e2); toast('Não foi possível carregar os colaboradores: ' + (e2.message || e2), true); }
+    try { await carregarTreinamentos(); }
+    catch (e3) { console.error(e3); toast('Não foi possível carregar os treinamentos: ' + (e3.message || e3), true); }
   } catch (e) {
     console.error(e);
     mostrarSemAcesso('Não foi possível carregar o RH', 'Motivo: ' + (e.message || e) + '. Tente de novo em instantes; se continuar, avise o administrador.');
@@ -768,7 +828,7 @@ function montarNavMobile(){
   document.querySelectorAll('#s-nav .s-link').forEach(function(a){ row.appendChild(a.cloneNode(true)); });
 }
 function irPara(pagina){
-  var PAGINAS = ['painel','vagas','colaboradores','organograma'];
+  var PAGINAS = ['painel','vagas','colaboradores','treinamentos','organograma'];
   if (PAGINAS.indexOf(pagina) < 0) pagina = 'painel';
   S.pagina = pagina;
   document.querySelectorAll('.s-link').forEach(function(a){ a.classList.toggle('active', a.dataset.page === pagina); });
@@ -836,6 +896,7 @@ function render(){
   if (S.pagina === 'painel') renderPainel();
   else if (S.pagina === 'vagas') renderVagas();
   else if (S.pagina === 'colaboradores') renderColab();
+  else if (S.pagina === 'treinamentos') renderTrein();
   else if (S.pagina === 'organograma') renderOrg();
 }
 
@@ -1324,6 +1385,7 @@ async function abrirColab(id){
   document.getElementById('up-desc').value = ''; document.getElementById('up-arquivo').value = ''; document.getElementById('up-erro').hidden = true;
   atualizarRotuloUpload();
   abrirModal('modal-colab');
+  renderTreinColab(id);
   if (podeEditar()) await carregarDocs(id);
 }
 function atualizarRotuloUpload(){
@@ -1415,6 +1477,487 @@ document.getElementById('up-enviar').addEventListener('click', async function(){
     falha('Não foi possível enviar: ' + (e.message || e));
   } finally { bt.disabled = false; bt.textContent = 'Enviar'; }
 });
+
+/* ================== treinamentos ================== */
+S.cursos = []; S.trilhas = []; S.trilhaCursos = []; S.exigencias = []; S.pTrilhas = []; S.turmas = []; S.partic = []; S.concl = []; S.sit = [];
+S.mapCurso = {}; S.mapTrilha = {};
+S.tt = 'geral';
+S.ftg = { filial:'', area:'', de:'', ate:'' };                                          // visão geral
+S.ftp = { busca:'', filial:'', area:'', curso:'', situacao:'resolver' };                 // pendências
+
+async function carregarTreinamentos(){
+  var r = await Promise.all([
+    consulta(function(){ return sb.from('cursos').select('*').order('nome'); }),
+    consulta(function(){ return sb.from('trilhas').select('*').order('nome'); }),
+    consulta(function(){ return sb.from('trilha_cursos').select('*').order('ordem'); }),
+    consulta(function(){ return sb.from('exigencias').select('*'); }),
+    consulta(function(){ return sb.from('pessoa_trilhas').select('*'); }),
+    consulta(function(){ return sb.from('turmas').select('*').order('inicio', { ascending:false }); }),
+    consulta(function(){ return sb.from('turma_participantes').select('*'); }),
+    consulta(function(){ return sb.from('conclusoes').select('*').order('data_conclusao', { ascending:false }).limit(20000); }),
+    consulta(function(){ return sb.rpc('situacao_treinamentos'); })
+  ]);
+  S.cursos = r[0] || []; S.trilhas = r[1] || []; S.trilhaCursos = r[2] || []; S.exigencias = r[3] || []; S.pTrilhas = r[4] || [];
+  S.turmas = r[5] || []; S.partic = r[6] || []; S.concl = r[7] || []; S.sit = r[8] || [];
+  S.mapCurso = {}; S.cursos.forEach(function(c){ S.mapCurso[c.id] = c; });
+  S.mapTrilha = {}; S.trilhas.forEach(function(t){ S.mapTrilha[t.id] = t; });
+}
+async function recarregarTrein(){ await carregarTreinamentos(); renderTrein(); if (S.colabAberto && !document.getElementById('modal-colab').hidden) renderTreinColab(S.colabAberto); }
+
+function nomeCurso(id){ return S.mapCurso[id] ? S.mapCurso[id].nome : '—'; }
+function diasAte(iso){ return diasEntre(hojeISO(), iso); }
+function pillSit(x){
+  if (x.situacao === 'pendente') return '<span class="pill warn"><svg><use href="#i-alerta"/></svg>Pendente</span>';
+  if (x.situacao === 'vencido') return '<span class="pill bad"><svg><use href="#i-alerta"/></svg>Vencido há ' + Math.abs(diasAte(x.validade_ate)) + 'd</span>';
+  if (x.situacao === 'vencendo') return '<span class="pill warn"><svg><use href="#i-alerta"/></svg>Vence em ' + diasAte(x.validade_ate) + 'd</span>';
+  return '<span class="pill ok"><svg><use href="#i-ok"/></svg>Em dia</span>';
+}
+
+/* ---- abas ---- */
+document.getElementById('trein-abas').addEventListener('click', function(e){
+  var b = e.target.closest('.aba'); if (!b) return;
+  S.tt = b.dataset.aba; renderTrein();
+});
+function renderTrein(){
+  if (!S.eu) return;
+  ['geral','pendencias','agenda','catalogo'].forEach(function(a){ document.getElementById('trein-' + a).hidden = S.tt !== a; });
+  document.querySelectorAll('#trein-abas .aba').forEach(function(b){ b.classList.toggle('ativa', b.dataset.aba === S.tt); });
+  var ac = document.getElementById('trein-acoes'); ac.innerHTML = '';
+  if (S.tt === 'geral') renderTreinGeral();
+  else if (S.tt === 'pendencias') renderTreinPend();
+  else if (S.tt === 'agenda') renderTreinAgenda();
+  else renderTreinCatalogo();
+}
+
+/* filtros em linha (mesmo padrão do resto do app) */
+function filtroSel(chave, rotulo, lista, valor){ return '<select data-f="' + chave + '">' + opcoes(lista, rotulo, valor) + '</select>'; }
+function listaFiliaisColab(){ var m = {}; S.colab.forEach(function(p){ if (p.filial_id) m[p.filial_id] = 1; }); return S.filiais.filter(function(f){ return m[f.id]; }).map(function(f){ return [f.id, f.nome]; }); }
+function listaAreasColab(){ var m = {}; S.colab.forEach(function(p){ if (areaChave(p)) m[areaChave(p)] = 1; }); return Object.keys(m).sort().map(function(a){ return [a, capitalizarArea(a)]; }); }
+function ligarFiltroDiv(el, alvo, depois, limparPadrao){
+  el.oninput = function(e){
+    var f = e.target.dataset.f; if (!f) return;
+    var pos = e.target.selectionStart, tipo = e.target.type;
+    alvo[f] = e.target.value; depois();
+    if (tipo === 'search' || tipo === 'text') { // o filtro foi redesenhado: devolve o foco e o cursor
+      var novo = document.querySelector('#trein-' + S.tt + ' [data-f="' + f + '"]');
+      if (novo) { novo.focus(); try { novo.setSelectionRange(pos, pos); } catch (er) {} }
+    }
+  };
+  el.onclick = function(e){
+    if (!e.target.hasAttribute('data-limpar')) return;
+    Object.keys(alvo).forEach(function(k){ alvo[k] = ''; });
+    if (limparPadrao) Object.assign(alvo, limparPadrao);
+    depois();
+  };
+}
+
+/* ---- visão geral ---- */
+function sitDaVisao(){
+  var f = S.ftg;
+  return S.sit.filter(function(x){
+    var p = S.mapColab[x.pessoa_id]; if (!p) return false;
+    return (!f.filial || p.filial_id === f.filial) && (!f.area || areaChave(p) === f.area);
+  });
+}
+function renderTreinGeral(){
+  var el = document.getElementById('trein-geral'), f = S.ftg;
+  if (!f.de) { var d = new Date(); d.setMonth(d.getMonth() - 11, 1); f.de = d.toISOString().slice(0, 8) + '01'; }
+  if (!f.ate) f.ate = hojeISO();
+  var sit = sitDaVisao();
+  var total = sit.length, emDia = sit.filter(function(x){ return x.situacao === 'ok' || x.situacao === 'vencendo'; }).length;
+  var venc = sit.filter(function(x){ return x.situacao === 'vencido'; }), vencendo = sit.filter(function(x){ return x.situacao === 'vencendo'; });
+  var pend = sit.filter(function(x){ return x.situacao === 'pendente'; });
+  var jaFez = sit.filter(function(x){ return x.situacao !== 'pendente'; }).length;
+  var conclPer = S.concl.filter(function(c){
+    var p = S.mapColab[c.pessoa_id]; if (!p) return false;
+    return c.data_conclusao >= f.de && c.data_conclusao <= f.ate && (!f.filial || p.filial_id === f.filial) && (!f.area || areaChave(p) === f.area);
+  });
+  var horas = conclPer.reduce(function(a, c){ return a + (+c.carga_horaria || 0); }, 0);
+  var proximas = S.turmas.filter(function(t){ return t.status === 'agendada' && t.inicio >= hojeISO(); });
+  document.getElementById('trein-sub').textContent = 'Treinamentos exigidos · alerta de vencimento em ' + (S.config.dias_alerta_vencimento || 60) + ' dias';
+  var kp = [
+    { l:'Aderência (em dia)', v: total ? Math.round(emDia / total * 100) + '%' : '—', s: emDia + ' de ' + total + ' exigidos', go:{ situacao:'' } },
+    { l:'Já concluídos', v: total ? Math.round(jaFez / total * 100) + '%' : '—', s:'fez ao menos uma vez', go:{ situacao:'' } },
+    { l:'Vencidos', v: venc.length, s:'precisam de reciclagem', cls: venc.length ? 'alerta' : '', go:{ situacao:'vencido' } },
+    { l:'Vencendo', v: vencendo.length, s:'nos próximos ' + (S.config.dias_alerta_vencimento || 60) + ' dias', cls: vencendo.length ? 'atencao' : '', go:{ situacao:'vencendo' } },
+    { l:'Pendentes', v: pend.length, s:'nunca fez', cls: pend.length ? 'atencao' : '', go:{ situacao:'pendente' } },
+    { l:'Horas de treinamento', v: Math.round(horas), s:'concluídas no período', go:null },
+    { l:'Próximas turmas', v: proximas.length, s:'agendadas', go:'agenda' }
+  ];
+  el.innerHTML =
+    '<div class="filtros" id="ftg-filtros">' + filtroSel('filial', 'Todas as filiais', listaFiliaisColab(), f.filial) + filtroSel('area', 'Todas as áreas', listaAreasColab(), f.area) +
+      '<label>Período (horas) <input type="date" data-f="de" value="' + esc(f.de) + '"> a <input type="date" data-f="ate" value="' + esc(f.ate) + '"></label><button class="link-limpar" data-limpar>Limpar</button></div>' +
+    '<div class="kpis" id="ftg-kpis">' + kp.map(function(k, i){ return '<button class="kpi ' + (k.cls || '') + '" data-i="' + i + '"><div class="k-label">' + esc(k.l) + '</div><div class="k-valor">' + esc(k.v) + '</div><div class="k-sub">' + esc(k.s) + '</div></button>'; }).join('') + '</div>' +
+    '<div class="grid-cards">' +
+      '<div class="card"><h2>Aderência por filial</h2><p class="c-sub">% dos treinamentos exigidos que estão em dia</p><div class="barras" id="tg-filial"></div></div>' +
+      '<div class="card"><h2>Aderência por área</h2><p class="c-sub">% em dia por centro de custo</p><div class="barras" id="tg-area"></div></div>' +
+      '<div class="card"><h2>Cursos com mais pendências</h2><p class="c-sub">Pendentes + vencidos</p><div class="barras" id="tg-curso"></div></div>' +
+      '<div class="card"><h2>Horas por filial</h2><p class="c-sub">Treinamentos concluídos no período</p><div class="barras" id="tg-horas-filial"></div></div>' +
+      '<div class="card"><h2>Horas por colaborador</h2><p class="c-sub">Maiores cargas no período</p><div class="barras" id="tg-horas-colab"></div></div>' +
+      '<div class="card"><h2>Obrigatórios x facultativos</h2><p class="c-sub">Concluídos no período, em horas</p><div class="barras" id="tg-obrig"></div></div>' +
+      '<div class="card largo"><h2>Próximos vencimentos</h2><p class="c-sub">Vencidos e a vencer, do mais urgente</p><div id="tg-venc"></div></div>' +
+    '</div>';
+  ligarFiltroDiv(document.getElementById('ftg-filtros'), S.ftg, renderTreinGeral);
+  document.getElementById('ftg-kpis').onclick = function(e){
+    var b = e.target.closest('.kpi'); if (!b) return; var go = kp[+b.dataset.i].go; if (go == null) return;
+    if (go === 'agenda') { S.tt = 'agenda'; renderTrein(); return; }
+    Object.assign(S.ftp, { busca:'', filial:S.ftg.filial, area:S.ftg.area, curso:'' }, go); S.tt = 'pendencias'; renderTrein();
+  };
+  function pctPor(chaveDe, nomeDe){
+    var m = {};
+    sit.forEach(function(x){ var k = chaveDe(S.mapColab[x.pessoa_id]); if (!k) return; m[k] = m[k] || { t:0, ok:0 }; m[k].t++; if (x.situacao === 'ok' || x.situacao === 'vencendo') m[k].ok++; });
+    return Object.keys(m).map(function(k){ return { id:k, nome:nomeDe(k), valor:Math.round(m[k].ok / m[k].t * 100) }; });
+  }
+  var fmtPct = function(x){ return x + '%'; };
+  barras('tg-filial', pctPor(function(p){ return p.filial_id; }, function(k){ return S.mapFilial[k] || '—'; }), { fmt:fmtPct, max:10, clique:function(i){ S.ftg.filial = i.id; renderTreinGeral(); } });
+  barras('tg-area', pctPor(function(p){ return areaChave(p); }, capitalizarArea), { fmt:fmtPct, max:10, clique:function(i){ S.ftg.area = i.id; renderTreinGeral(); } });
+  var pc = {}; sit.forEach(function(x){ if (x.situacao === 'pendente' || x.situacao === 'vencido') pc[x.curso_id] = (pc[x.curso_id] || 0) + 1; });
+  barras('tg-curso', Object.keys(pc).map(function(k){ return { id:k, nome:nomeCurso(k), valor:pc[k] }; }), { clique:function(i){ Object.assign(S.ftp, { busca:'', filial:S.ftg.filial, area:S.ftg.area, curso:i.id, situacao:'resolver' }); S.tt = 'pendencias'; renderTrein(); } });
+  var hf = {}; conclPer.forEach(function(c){ var p = S.mapColab[c.pessoa_id]; if (p && p.filial_id) hf[p.filial_id] = (hf[p.filial_id] || 0) + (+c.carga_horaria || 0); });
+  barras('tg-horas-filial', Object.keys(hf).map(function(k){ return { id:k, nome:S.mapFilial[k] || '—', valor:Math.round(hf[k]) }; }), { fmt:function(x){ return x + 'h'; } });
+  var hc = {}; conclPer.forEach(function(c){ hc[c.pessoa_id] = (hc[c.pessoa_id] || 0) + (+c.carga_horaria || 0); });
+  barras('tg-horas-colab', Object.keys(hc).map(function(k){ return { id:k, nome:nomeColab(k), valor:Math.round(hc[k]) }; }), { fmt:function(x){ return x + 'h'; }, clique:function(i){ abrirColab(i.id); } });
+  var ho = { 'Obrigatórios':0, 'Facultativos':0 };
+  conclPer.forEach(function(c){
+    var cu = S.mapCurso[c.curso_id]; if (!cu) return;
+    var obr = cu.obrigatorio || S.exigencias.some(function(e){ return e.curso_id === cu.id; }) || S.trilhaCursos.some(function(t){ return t.curso_id === cu.id; });
+    ho[obr ? 'Obrigatórios' : 'Facultativos'] += (+c.carga_horaria || 0);
+  });
+  barras('tg-obrig', Object.keys(ho).map(function(k){ return { id:k, nome:k, valor:Math.round(ho[k]) }; }), { fmt:function(x){ return x + 'h'; } });
+  var urg = sit.filter(function(x){ return x.situacao === 'vencido' || x.situacao === 'vencendo'; }).sort(function(a, b){ return a.validade_ate < b.validade_ate ? -1 : 1; }).slice(0, 15);
+  document.getElementById('tg-venc').innerHTML = urg.length ? tabelaSit(urg) : '<div class="vazio">Nenhum treinamento vencido ou vencendo. 👏</div>';
+}
+
+/* ---- pendências ---- */
+function tabelaSit(lista){
+  return '<div class="tabela-scroll"><table><thead><tr><th>Colaborador</th><th>Filial</th><th>Curso</th><th>Exigido por</th><th>Última conclusão</th><th>Validade</th><th>Situação</th></tr></thead><tbody>' +
+    lista.map(function(x){
+      var p = S.mapColab[x.pessoa_id] || {};
+      return '<tr data-colab="' + x.pessoa_id + '"><td><div class="quem">' + avatarPessoa(p) + '<div class="q-nome">' + esc(p.nome || '—') + '</div></div></td><td>' + esc(nomeFilialColab(p.filial_id)) + '</td>' +
+        '<td><strong>' + esc(nomeCurso(x.curso_id)) + '</strong></td><td>' + esc(x.motivo) + '</td><td>' + fmtData(x.ultima_conclusao) + '</td><td>' + fmtData(x.validade_ate) + '</td><td>' + pillSit(x) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+function sitFiltradaPend(){
+  var f = S.ftp, q = (f.busca || '').toLowerCase();
+  return S.sit.filter(function(x){
+    var p = S.mapColab[x.pessoa_id]; if (!p) return false;
+    if (f.filial && p.filial_id !== f.filial) return false;
+    if (f.area && areaChave(p) !== f.area) return false;
+    if (f.curso && String(x.curso_id) !== String(f.curso)) return false;
+    if (f.situacao === 'resolver' && x.situacao === 'ok') return false;
+    if (f.situacao && f.situacao !== 'resolver' && f.situacao !== 'todas' && x.situacao !== f.situacao) return false;
+    if (q && [p.nome, p.matricula, nomeCurso(x.curso_id)].join(' ').toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  }).sort(function(a, b){
+    var ordem = { vencido:0, vencendo:1, pendente:2, ok:3 };
+    return (ordem[a.situacao] - ordem[b.situacao]) || ((a.validade_ate || '9999') < (b.validade_ate || '9999') ? -1 : 1);
+  });
+}
+function renderTreinPend(){
+  var el = document.getElementById('trein-pendencias'), f = S.ftp;
+  var lista = sitFiltradaPend();
+  document.getElementById('trein-acoes').innerHTML = '<button class="btn btn-ghost" onclick="exportarPendExcel()"><svg><use href="#i-excel"/></svg>Excel</button>';
+  el.innerHTML =
+    '<div class="filtros" id="ftp-filtros"><input class="busca" type="search" placeholder="Buscar colaborador, matrícula ou curso…" data-f="busca" value="' + esc(f.busca) + '">' +
+      '<select data-f="situacao">' + opcoes([['resolver','A resolver'], ['vencido','Vencidos'], ['vencendo','Vencendo'], ['pendente','Pendentes'], ['ok','Em dia'], ['todas','Todas']], '', f.situacao).replace('<option value=""></option>', '') + '</select>' +
+      filtroSel('filial', 'Todas as filiais', listaFiliaisColab(), f.filial) + filtroSel('area', 'Todas as áreas', listaAreasColab(), f.area) +
+      filtroSel('curso', 'Todos os cursos', S.cursos.map(function(c){ return [c.id, c.nome]; }), f.curso) + '<button class="link-limpar" data-limpar>Limpar</button></div>' +
+    '<p class="vazio" style="padding:0 0 10px">' + lista.length + ' ' + (lista.length === 1 ? 'item' : 'itens') + '. Clique numa linha para abrir a ficha do colaborador.</p>' +
+    '<div class="tabela-wrap">' + (lista.length ? tabelaSit(lista.slice(0, 500)) : '<div class="vazio" style="padding:28px">Nada a resolver com esses filtros.</div>') + '</div>' +
+    (lista.length > 500 ? '<p class="vazio">Mostrando os 500 primeiros. Use os filtros ou exporte para Excel.</p>' : '');
+  ligarFiltroDiv(document.getElementById('ftp-filtros'), S.ftp, renderTreinPend, { situacao:'resolver' });
+}
+async function exportarPendExcel(){
+  if (typeof XLSX === 'undefined') { toast('O exportador ainda está carregando. Tente de novo em instantes.', true); return; }
+  var lista = sitFiltradaPend();
+  try { await registrarExportacao('excel', 'treinamentos pendências (' + lista.length + ')', S.ftp); }
+  catch (e) { toast('Exportação bloqueada: não foi possível registrar. ' + (e.message || ''), true); return; }
+  var linhas = lista.map(function(x){
+    var p = S.mapColab[x.pessoa_id] || {};
+    return { 'Colaborador': p.nome || '', 'Matrícula': p.matricula || '', 'Filial': nomeFilialColab(p.filial_id), 'Área': capitalizarArea(p.centro_custo), 'Gestor': nomeColab(p.gestor_imediato_id),
+      'Curso': nomeCurso(x.curso_id), 'Exigido por': x.motivo, 'Última conclusão': x.ultima_conclusao ? fmtData(x.ultima_conclusao) : '', 'Validade': x.validade_ate ? fmtData(x.validade_ate) : '',
+      'Situação': { pendente:'Pendente', vencido:'Vencido', vencendo:'Vencendo', ok:'Em dia' }[x.situacao] };
+  });
+  var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(linhas), 'Treinamentos');
+  XLSX.writeFile(wb, 'treinamentos_' + hojeISO() + '.xlsx');
+}
+
+/* ---- modal genérico ---- */
+var gAoSalvar = null;
+(function(){
+  var m = document.getElementById('modal-g');
+  m.addEventListener('click', function(e){ if (e.target === m || e.target.closest('[data-fechar]')) fecharModal('modal-g'); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') fecharModal('modal-g'); });
+})();
+function abrirG(o){
+  document.getElementById('g-titulo').textContent = o.titulo;
+  document.getElementById('g-corpo').innerHTML = o.corpo;
+  document.getElementById('g-erro').hidden = true;
+  gAoSalvar = o.aoSalvar || null;
+  document.getElementById('g-acoes').innerHTML = '<button type="button" class="btn btn-ghost" data-fechar>' + (o.aoSalvar ? 'Cancelar' : 'Fechar') + '</button>' +
+    (o.aoSalvar ? '<button type="button" class="btn btn-primary" id="g-salvar">' + esc(o.textoSalvar || 'Salvar') + '</button>' : '');
+  if (o.aoSalvar) document.getElementById('g-salvar').onclick = async function(){
+    var bt = this, erro = document.getElementById('g-erro'); erro.hidden = true; bt.disabled = true;
+    try { var r = await gAoSalvar(); if (r !== false) fecharModal('modal-g'); }
+    catch (e) { erro.textContent = (e && e.message) || String(e); erro.hidden = false; }
+    finally { bt.disabled = false; }
+  };
+  abrirModal('modal-g');
+}
+function gv(k){ var el = document.querySelector('#g-corpo [data-k="' + k + '"]'); if (!el) return ''; return el.type === 'checkbox' ? el.checked : el.value.trim(); }
+function gErro(msg){ throw new Error(msg); }
+function campoG(k, rotulo, tipo, valor, extra){
+  return '<label class="campo' + (extra && extra.full ? ' full' : '') + '"><span>' + esc(rotulo) + '</span><input data-k="' + k + '" type="' + tipo + '" value="' + esc(valor == null ? '' : valor) + '"' + ((extra && extra.attrs) || '') + '></label>';
+}
+function selG(k, rotulo, lista, valor, extra){
+  return '<label class="campo' + (extra && extra.full ? ' full' : '') + '"><span>' + esc(rotulo) + '</span><select data-k="' + k + '"' + ((extra && extra.attrs) || '') + '>' + opcoes(lista, (extra && extra.vazio) || 'Selecione…', valor) + '</select></label>';
+}
+function chkG(k, rotulo, marcado){ return '<label class="campo full" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" data-k="' + k + '"' + (marcado ? ' checked' : '') + ' style="min-height:0"><span>' + esc(rotulo) + '</span></label>'; }
+
+/* ---- agenda ---- */
+function inscritosDa(tid){ return S.partic.filter(function(p){ return p.turma_id === tid; }); }
+function renderTreinAgenda(){
+  var el = document.getElementById('trein-agenda');
+  document.getElementById('trein-acoes').innerHTML = podeEditar() ? '<button class="btn btn-primary" onclick="abrirTurma(null)"><svg><use href="#i-mais"/></svg>Nova turma</button>' : '';
+  var hoje = hojeISO();
+  var futuras = S.turmas.filter(function(t){ return t.status === 'agendada' && t.inicio >= hoje; }).sort(function(a, b){ return a.inicio < b.inicio ? -1 : 1; });
+  var passadas = S.turmas.filter(function(t){ return !(t.status === 'agendada' && t.inicio >= hoje); });
+  function tab(lista, vazio){
+    if (!lista.length) return '<div class="vazio" style="padding:22px">' + vazio + '</div>';
+    return '<div class="tabela-scroll"><table><thead><tr><th>Data</th><th>Curso</th><th>Local</th><th>Instrutor</th><th class="num">Inscritos</th><th>Situação</th></tr></thead><tbody>' +
+      lista.map(function(t){
+        var n = inscritosDa(t.id).length, cheia = t.capacidade && n >= t.capacidade;
+        var st = t.status === 'cancelada' ? '<span class="pill bad">Cancelada</span>' : t.status === 'realizada' ? '<span class="pill ok">Realizada</span>' : (t.inicio < hoje ? '<span class="pill warn">Atrasada: marque como realizada</span>' : '<span class="pill azul">Agendada</span>');
+        return '<tr data-turma="' + t.id + '"><td>' + fmtData(t.inicio) + (t.fim && t.fim !== t.inicio ? ' a ' + fmtData(t.fim) : '') + (t.horario ? '<div class="q-sub">' + esc(t.horario) + '</div>' : '') + '</td><td><strong>' + esc(nomeCurso(t.curso_id)) + '</strong></td>' +
+          '<td>' + esc(t.local || '—') + '</td><td>' + esc(t.instrutor || '—') + '</td><td class="num">' + n + (t.capacidade ? ' / ' + t.capacidade : '') + (cheia ? ' <span class="pill warn">Lotada</span>' : '') + '</td><td>' + st + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  el.innerHTML = '<div class="sec-tit">Próximas turmas</div><div class="tabela-wrap" style="margin-bottom:24px">' + tab(futuras, 'Nenhuma turma agendada.' + (podeEditar() ? ' Use “Nova turma”.' : '')) + '</div>' +
+    '<div class="sec-tit">Anteriores e canceladas</div><div class="tabela-wrap">' + tab(passadas.slice(0, 60), 'Nenhuma turma anterior.') + '</div>';
+  el.onclick = function(e){ var tr = e.target.closest('tr[data-turma]'); if (tr) abrirTurma(+tr.dataset.turma); };
+}
+
+var STATUS_PART = [['convocado','Convocado'], ['confirmado','Confirmado'], ['presente','Presente'], ['ausente','Ausente'], ['aprovado','Aprovado'], ['reprovado','Reprovado']];
+function abrirTurma(id){
+  var t = id ? S.turmas.find(function(x){ return x.id === id; }) : null;
+  if (id && !t) return;
+  var ativos = S.cursos.filter(function(c){ return c.ativo || (t && t.curso_id === c.id); }).map(function(c){ return [c.id, c.nome]; });
+  if (!ativos.length && !t) { toast('Cadastre um curso no Catálogo antes de criar uma turma.', true); return; }
+  var corpo = '<div class="form-grid">' +
+    selG('curso_id', 'Curso *', ativos, t ? t.curso_id : '', { full:true, attrs: t ? ' disabled' : '' }) +
+    campoG('inicio', 'Início *', 'date', t ? t.inicio : hojeISO()) + campoG('fim', 'Fim', 'date', t ? (t.fim || '') : '') +
+    campoG('horario', 'Horário', 'text', t ? (t.horario || '') : '', { attrs:' maxlength="60" placeholder="Ex.: 08h às 17h"' }) + campoG('capacidade', 'Capacidade (vagas)', 'number', t ? (t.capacidade || '') : '', { attrs:' min="1" max="999"' }) +
+    campoG('local', 'Local', 'text', t ? (t.local || '') : '', { attrs:' maxlength="120"' }) + campoG('instrutor', 'Instrutor', 'text', t ? (t.instrutor || '') : '', { attrs:' maxlength="120"' }) +
+    selG('status', 'Situação', [['agendada','Agendada'], ['realizada','Realizada'], ['cancelada','Cancelada']], t ? t.status : 'agendada', { full:true, vazio:'' }) +
+    '<label class="campo full"><span>Observações</span><textarea data-k="observacoes" maxlength="500">' + esc(t ? (t.observacoes || '') : '') + '</textarea></label></div>' +
+    (t ? '<div class="sec-tit" style="margin-top:22px">Participantes</div><div id="turma-part"></div>' : '<p class="modal-note">Depois de salvar a turma você escolhe quem participa.</p>');
+  abrirG({ titulo: t ? 'Turma · ' + nomeCurso(t.curso_id) : 'Nova turma', corpo: corpo, textoSalvar: t ? 'Salvar dados da turma' : 'Criar turma',
+    aoSalvar: async function(){
+      var dados = { inicio: gv('inicio'), fim: gv('fim') || null, horario: gv('horario') || null, local: gv('local') || null, instrutor: gv('instrutor') || null,
+        capacidade: gv('capacidade') ? parseInt(gv('capacidade'), 10) : null, status: gv('status') || 'agendada', observacoes: gv('observacoes') || null };
+      if (!dados.inicio) gErro('Informe a data de início.');
+      if (dados.fim && dados.fim < dados.inicio) gErro('O fim não pode ser antes do início.');
+      if (t) {
+        await consulta(function(){ return sb.from('turmas').update(dados).eq('id', t.id).select('id'); });
+        await recarregarTrein(); toast('Turma atualizada.'); return;
+      }
+      if (!gv('curso_id')) gErro('Escolha o curso.');
+      dados.curso_id = +gv('curso_id');
+      var nova = await consulta(function(){ return sb.from('turmas').insert(dados).select('id'); });
+      await recarregarTrein(); toast('Turma criada. Agora escolha os participantes.');
+      setTimeout(function(){ abrirTurma(nova[0].id); }, 30); return;
+    } });
+  if (!podeEditar()) document.getElementById('g-salvar') && (document.getElementById('g-salvar').hidden = true);
+  if (t) renderPartTurma(t.id);
+}
+function renderPartTurma(tid){
+  var t = S.turmas.find(function(x){ return x.id === tid; }), el = document.getElementById('turma-part'); if (!t || !el) return;
+  var ins = inscritosDa(tid).sort(function(a, b){ return nomeColab(a.pessoa_id).localeCompare(nomeColab(b.pessoa_id), 'pt-BR'); });
+  var jaIds = {}; ins.forEach(function(p){ jaIds[p.pessoa_id] = 1; });
+  var sugestoes = podeEditar() ? S.sit.filter(function(x){ return x.curso_id === t.curso_id && x.situacao !== 'ok' && !jaIds[x.pessoa_id] && S.mapColab[x.pessoa_id]; })
+    .sort(function(a, b){ return nomeColab(a.pessoa_id).localeCompare(nomeColab(b.pessoa_id), 'pt-BR'); }) : [];
+  var cheia = t.capacidade && ins.length >= t.capacidade;
+  el.innerHTML =
+    (cheia ? '<div class="aviso-cap">A turma está cheia (' + ins.length + ' de ' + t.capacidade + ' vagas).</div>' : '') +
+    (ins.length ? ins.map(function(p){
+      return '<div class="part-linha"><div><strong>' + esc(nomeColab(p.pessoa_id)) + '</strong><div class="q-sub">' + esc(nomeFilialColab((S.mapColab[p.pessoa_id] || {}).filial_id)) + '</div></div>' +
+        '<select data-part="' + p.pessoa_id + '"' + (podeEditar() ? '' : ' disabled') + '>' + STATUS_PART.map(function(s){ return '<option value="' + s[0] + '"' + (p.status === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select>' +
+        '<input type="number" min="0" max="100" step="0.1" placeholder="Nota" data-nota="' + p.pessoa_id + '" value="' + (p.nota == null ? '' : p.nota) + '"' + (podeEditar() ? '' : ' disabled') + '>' +
+        (podeEditar() ? '<button class="rm" data-rm="' + p.pessoa_id + '" title="Remover da turma">✕</button>' : '<span></span>') + '</div>';
+    }).join('') : '<div class="vazio">Ninguém designado ainda.</div>') +
+    (podeEditar() ? '<div class="sec-tit" style="margin-top:18px">Adicionar participantes</div>' +
+      '<div class="form-grid"><label class="campo full"><span>Buscar colaborador</span><input id="tp-busca" list="tp-lista" autocomplete="off" placeholder="Digite o nome e escolha"></label></div>' +
+      '<datalist id="tp-lista">' + S.colab.filter(function(p){ return !p.inativo && !jaIds[p.id]; }).map(function(p){ return '<option value="' + esc(p.nome) + '">'; }).join('') + '</datalist>' +
+      '<div class="modal-actions" style="margin:6px 0 0"><button class="btn btn-ghost" id="tp-add">Adicionar</button></div>' +
+      (sugestoes.length ? '<div class="sec-tit" style="margin-top:18px">Sugeridos (pendentes, vencidos ou vencendo neste curso)</div>' +
+        '<div class="chk-lista" id="tp-sug">' + sugestoes.slice(0, 80).map(function(x){ return '<label><input type="checkbox" value="' + x.pessoa_id + '"> ' + esc(nomeColab(x.pessoa_id)) + ' <span class="q-sub">· ' + esc(nomeFilialColab(S.mapColab[x.pessoa_id].filial_id)) + '</span> ' + pillSit(x) + '</label>'; }).join('') + '</div>' +
+        '<div class="modal-actions" style="margin:8px 0 0"><button class="btn btn-primary" id="tp-conv">Convocar selecionados</button></div>' : '') : '');
+  async function inserir(ids){
+    if (!ids.length) return;
+    await consulta(function(){ return sb.from('turma_participantes').insert(ids.map(function(pid){ return { turma_id: tid, pessoa_id: pid }; })); });
+    await recarregarTrein(); renderPartTurma(tid);
+  }
+  el.querySelectorAll('[data-part]').forEach(function(s){ s.addEventListener('change', async function(){
+    try { await consulta(function(){ return sb.from('turma_participantes').update({ status: s.value }).eq('turma_id', tid).eq('pessoa_id', s.dataset.part).select('pessoa_id'); });
+      await recarregarTrein(); renderPartTurma(tid); if (s.value === 'aprovado') toast('Aprovado: conclusão registrada no histórico.'); } catch (e) { toast('Não foi possível atualizar: ' + (e.message || e), true); } }); });
+  el.querySelectorAll('[data-nota]').forEach(function(i){ i.addEventListener('change', async function(){
+    try { await consulta(function(){ return sb.from('turma_participantes').update({ nota: i.value === '' ? null : +i.value }).eq('turma_id', tid).eq('pessoa_id', i.dataset.nota).select('pessoa_id'); }); await carregarTreinamentos(); } catch (e) { toast('Não foi possível salvar a nota: ' + (e.message || e), true); } }); });
+  el.querySelectorAll('[data-rm]').forEach(function(b){ b.addEventListener('click', async function(){
+    try { await consulta(function(){ return sb.from('turma_participantes').delete().eq('turma_id', tid).eq('pessoa_id', b.dataset.rm).select('pessoa_id'); }); await recarregarTrein(); renderPartTurma(tid); } catch (e) { toast('Não foi possível remover: ' + (e.message || e), true); } }); });
+  var add = document.getElementById('tp-add');
+  if (add) add.onclick = async function(){
+    var nome = document.getElementById('tp-busca').value.trim().toLowerCase();
+    var p = S.colab.find(function(x){ return !x.inativo && x.nome.toLowerCase() === nome && !jaIds[x.id]; });
+    if (!p) { toast('Escolha um colaborador da lista.', true); return; }
+    try { await inserir([p.id]); } catch (e) { toast('Não foi possível adicionar: ' + (e.message || e), true); }
+  };
+  var conv = document.getElementById('tp-conv');
+  if (conv) conv.onclick = async function(){
+    var ids = [].map.call(document.querySelectorAll('#tp-sug input:checked'), function(i){ return i.value; });
+    if (!ids.length) { toast('Marque quem você quer convocar.', true); return; }
+    try { await inserir(ids); toast(ids.length + ' convocado(s).'); } catch (e) { toast('Não foi possível convocar: ' + (e.message || e), true); }
+  };
+}
+
+/* ---- catálogo ---- */
+function renderTreinCatalogo(){
+  var el = document.getElementById('trein-catalogo'), adm = S.nivel === 'admin';
+  document.getElementById('trein-acoes').innerHTML = adm ? '<button class="btn btn-primary" onclick="abrirCurso(null)"><svg><use href="#i-mais"/></svg>Novo curso</button><button class="btn btn-ghost" onclick="abrirTrilha(null)">Nova trilha</button><button class="btn btn-ghost" onclick="abrirExigencia()">Exigir por cargo</button>' : '';
+  var cursosHtml = S.cursos.length ? '<div class="tabela-scroll"><table><thead><tr><th>Curso</th><th>Categoria</th><th class="num">Horas</th><th>Validade</th><th>Modalidade</th><th>Obrigatório</th><th>Cargos exigidos</th><th></th></tr></thead><tbody>' +
+    S.cursos.map(function(c){
+      var cargos = S.exigencias.filter(function(e){ return e.curso_id === c.id; }).map(function(e){ return capitalizarCargo(e.cargo); });
+      return '<tr' + (adm ? ' data-curso="' + c.id + '"' : '') + '><td><strong>' + esc(c.nome) + '</strong>' + (c.ativo ? '' : ' <span class="pill">Inativo</span>') + '</td><td>' + esc(c.categoria || '—') + '</td><td class="num">' + c.carga_horaria + '</td>' +
+        '<td>' + (c.validade_meses ? c.validade_meses + ' meses' : 'Não vence') + '</td><td>' + ({ presencial:'Presencial', online:'Online', hibrido:'Híbrido' }[c.modalidade]) + '</td>' +
+        '<td>' + (c.obrigatorio ? '<span class="pill azul">Todos</span>' : '<span class="pill">Por cargo / trilha</span>') + '</td><td>' + esc(cargos.join(', ') || '—') + '</td><td></td></tr>';
+    }).join('') + '</tbody></table></div>' : '<div class="vazio" style="padding:22px">Nenhum curso cadastrado' + (adm ? '. Use “Novo curso”.' : '.') + '</div>';
+  var trilhasHtml = S.trilhas.length ? '<div class="lista-cards">' + S.trilhas.map(function(t){
+    var cs = S.trilhaCursos.filter(function(x){ return x.trilha_id === t.id; }).sort(function(a, b){ return a.ordem - b.ordem; }).map(function(x){ return nomeCurso(x.curso_id); });
+    var n = S.pTrilhas.filter(function(x){ return x.trilha_id === t.id && x.status === 'cursando'; }).length;
+    return '<div class="trilha-card"><h3>' + esc(t.nome) + (t.ativo ? '' : ' <span class="pill">Inativa</span>') + '</h3><div class="tc-sub">' + esc(t.descricao || '') + (t.descricao ? ' · ' : '') + n + ' colaborador(es) cursando</div>' +
+      (cs.length ? '<ul>' + cs.map(function(c){ return '<li>' + esc(c) + '</li>'; }).join('') + '</ul>' : '<div class="vazio">Sem cursos.</div>') +
+      (adm ? '<button class="btn btn-ghost" data-trilha="' + t.id + '" style="padding:6px 12px;font-size:.78rem">Editar</button>' : '') + '</div>';
+  }).join('') + '</div>' : '<div class="vazio" style="padding:22px">Nenhuma trilha cadastrada' + (adm ? '. Use “Nova trilha” (ex.: Mecânico Master, Mecânico Mecatrônica).' : '.') + '</div>';
+  el.innerHTML = '<div class="sec-tit">Cursos</div><div class="tabela-wrap" style="margin-bottom:24px">' + cursosHtml + '</div><div class="sec-tit">Trilhas</div>' + trilhasHtml +
+    (adm ? '' : '<p class="modal-note" style="margin-top:18px">O catálogo é mantido pelo administrador do RH.</p>');
+  el.onclick = function(e){
+    var tr = e.target.closest('tr[data-curso]'); if (tr) { abrirCurso(+tr.dataset.curso); return; }
+    var bt = e.target.closest('[data-trilha]'); if (bt) abrirTrilha(+bt.dataset.trilha);
+  };
+}
+function abrirCurso(id){
+  if (S.nivel !== 'admin') return;
+  var c = id ? S.mapCurso[id] : null;
+  abrirG({ titulo: c ? 'Editar curso' : 'Novo curso', textoSalvar: 'Salvar',
+    corpo: '<div class="form-grid">' + campoG('nome', 'Nome *', 'text', c ? c.nome : '', { full:true, attrs:' maxlength="120"' }) + campoG('categoria', 'Categoria', 'text', c ? (c.categoria || '') : '', { attrs:' maxlength="80" placeholder="Ex.: Segurança, Técnico"' }) +
+      campoG('carga_horaria', 'Carga horária (h)', 'number', c ? c.carga_horaria : 0, { attrs:' min="0" max="999" step="0.5"' }) +
+      campoG('validade_meses', 'Validade (meses)', 'number', c ? (c.validade_meses || '') : '', { attrs:' min="1" max="120" placeholder="vazio = não vence"' }) +
+      selG('modalidade', 'Modalidade', [['presencial','Presencial'], ['online','Online'], ['hibrido','Híbrido']], c ? c.modalidade : 'presencial', { vazio:'' }) +
+      chkG('obrigatorio', 'Obrigatório para TODOS os colaboradores ativos', c && c.obrigatorio) + chkG('ativo', 'Curso ativo', c ? c.ativo : true) + '</div>',
+    aoSalvar: async function(){
+      var d = { nome: gv('nome'), categoria: gv('categoria') || null, carga_horaria: +gv('carga_horaria') || 0, validade_meses: gv('validade_meses') ? parseInt(gv('validade_meses'), 10) : null,
+        modalidade: gv('modalidade') || 'presencial', obrigatorio: gv('obrigatorio'), ativo: gv('ativo') };
+      if (!d.nome) gErro('Informe o nome do curso.');
+      try {
+        if (c) await consulta(function(){ return sb.from('cursos').update(d).eq('id', c.id).select('id'); });
+        else await consulta(function(){ return sb.from('cursos').insert(d).select('id'); });
+      } catch (e) { if (/unique|duplicate/i.test(e.message || '')) gErro('Já existe um curso com esse nome.'); throw e; }
+      await recarregarTrein(); toast('Curso salvo.');
+    } });
+}
+function abrirTrilha(id){
+  if (S.nivel !== 'admin') return;
+  var t = id ? S.mapTrilha[id] : null;
+  var marcados = {}; if (t) S.trilhaCursos.filter(function(x){ return x.trilha_id === t.id; }).forEach(function(x){ marcados[x.curso_id] = 1; });
+  abrirG({ titulo: t ? 'Editar trilha' : 'Nova trilha', textoSalvar: 'Salvar',
+    corpo: '<div class="form-grid">' + campoG('nome', 'Nome *', 'text', t ? t.nome : '', { full:true, attrs:' maxlength="120" placeholder="Ex.: Mecânico Master"' }) + campoG('descricao', 'Descrição', 'text', t ? (t.descricao || '') : '', { full:true, attrs:' maxlength="300"' }) +
+      chkG('ativo', 'Trilha ativa', t ? t.ativo : true) + '</div><div class="sec-tit" style="margin-top:14px">Cursos da trilha</div>' +
+      (S.cursos.length ? '<div class="chk-lista" id="g-cursos">' + S.cursos.map(function(c){ return '<label><input type="checkbox" value="' + c.id + '"' + (marcados[c.id] ? ' checked' : '') + '> ' + esc(c.nome) + '</label>'; }).join('') + '</div>' : '<div class="vazio">Cadastre cursos primeiro.</div>'),
+    aoSalvar: async function(){
+      var d = { nome: gv('nome'), descricao: gv('descricao') || null, ativo: gv('ativo') };
+      if (!d.nome) gErro('Informe o nome da trilha.');
+      var ids = [].map.call(document.querySelectorAll('#g-cursos input:checked'), function(i){ return +i.value; });
+      var tid;
+      try {
+        if (t) { await consulta(function(){ return sb.from('trilhas').update(d).eq('id', t.id).select('id'); }); tid = t.id; }
+        else { var n = await consulta(function(){ return sb.from('trilhas').insert(d).select('id'); }); tid = n[0].id; }
+      } catch (e) { if (/unique|duplicate/i.test(e.message || '')) gErro('Já existe uma trilha com esse nome.'); throw e; }
+      await consulta(function(){ return sb.from('trilha_cursos').delete().eq('trilha_id', tid).select('curso_id'); });
+      if (ids.length) await consulta(function(){ return sb.from('trilha_cursos').insert(ids.map(function(cid, i){ return { trilha_id: tid, curso_id: cid, ordem: i + 1 }; })); });
+      await recarregarTrein(); toast('Trilha salva.');
+    } });
+}
+function abrirExigencia(){
+  if (S.nivel !== 'admin') return;
+  var cargos = {}; S.colab.forEach(function(p){ if (p.cargo) cargos[String(p.cargo).trim().toUpperCase()] = 1; });
+  abrirG({ titulo: 'Exigir curso por cargo', textoSalvar: 'Adicionar',
+    corpo: '<div class="form-grid">' + selG('curso_id', 'Curso *', S.cursos.filter(function(c){ return c.ativo; }).map(function(c){ return [c.id, c.nome]; }), '', { full:true }) +
+      '<label class="campo full"><span>Cargo *</span><input data-k="cargo" list="g-cargos" autocomplete="off" placeholder="Digite e escolha um cargo existente"></label></div>' +
+      '<datalist id="g-cargos">' + Object.keys(cargos).sort().map(function(c){ return '<option value="' + esc(capitalizarCargo(c)) + '">'; }).join('') + '</datalist>' +
+      '<p class="modal-note">Todo colaborador ativo com esse cargo passa a precisar do curso. Para remover uma exigência, use o botão abaixo na lista.</p>' +
+      '<div class="sec-tit">Exigências atuais</div><div id="g-exig">' + (S.exigencias.length ? S.exigencias.map(function(e){ return '<div class="part-linha" style="grid-template-columns:1fr 1fr 32px"><div><strong>' + esc(nomeCurso(e.curso_id)) + '</strong></div><div>' + esc(capitalizarCargo(e.cargo)) + '</div><button class="rm" data-rmex="' + e.id + '" title="Remover">✕</button></div>'; }).join('') : '<div class="vazio">Nenhuma ainda.</div>') + '</div>',
+    aoSalvar: async function(){
+      var cargo = gv('cargo').toUpperCase();
+      if (!gv('curso_id')) gErro('Escolha o curso.');
+      if (!cargo) gErro('Informe o cargo.');
+      try { await consulta(function(){ return sb.from('exigencias').insert({ curso_id: +gv('curso_id'), cargo: cargo }); }); }
+      catch (e) { if (/unique|duplicate/i.test(e.message || '')) gErro('Essa exigência já existe.'); throw e; }
+      await recarregarTrein(); toast('Exigência adicionada.');
+    } });
+  document.getElementById('g-exig').onclick = async function(e){
+    var b = e.target.closest('[data-rmex]'); if (!b) return;
+    try { await consulta(function(){ return sb.from('exigencias').delete().eq('id', +b.dataset.rmex).select('id'); }); await recarregarTrein(); abrirExigencia(); } catch (er) { toast('Não foi possível remover: ' + (er.message || er), true); }
+  };
+}
+
+/* ---- treinamentos na ficha do colaborador ---- */
+function renderTreinColab(pid){
+  var el = document.getElementById('colab-trein'); if (!el) return;
+  var minhas = S.pTrilhas.filter(function(x){ return x.pessoa_id === pid; });
+  var sit = S.sit.filter(function(x){ return x.pessoa_id === pid; }).sort(function(a, b){ return ({ vencido:0, vencendo:1, pendente:2, ok:3 }[a.situacao]) - ({ vencido:0, vencendo:1, pendente:2, ok:3 }[b.situacao]); });
+  var feitos = S.concl.filter(function(c){ return c.pessoa_id === pid; });
+  var horas = feitos.reduce(function(a, c){ return a + (+c.carga_horaria || 0); }, 0);
+  var podeOp = podeEditar();
+  var trilhasLivres = S.trilhas.filter(function(t){ return t.ativo && !minhas.some(function(m){ return m.trilha_id === t.id; }); }).map(function(t){ return [t.id, t.nome]; });
+  el.innerHTML =
+    '<div class="sec-tit" style="margin-top:18px">Trilhas</div>' +
+    (minhas.length ? '<div class="doc-lista">' + minhas.map(function(m){
+      return '<div class="doc-item"><div class="doc-info"><div class="doc-tit">' + esc((S.mapTrilha[m.trilha_id] || {}).nome || '—') + (m.nivel ? ' · ' + esc(m.nivel) : '') + '</div><div class="doc-sub">' + (m.status === 'concluida' ? 'Concluída em ' + fmtData(m.concluida_em) : 'Cursando desde ' + fmtData(m.desde)) + '</div></div>' +
+        (podeOp && m.status === 'cursando' ? '<button class="btn btn-ghost" data-concl-trilha="' + m.trilha_id + '">Concluir</button>' : '') +
+        (podeOp ? '<button class="btn btn-danger" data-rm-trilha="' + m.trilha_id + '">Remover</button>' : '') + '</div>';
+    }).join('') + '</div>' : '<div class="vazio">Não está em nenhuma trilha.</div>') +
+    (podeOp && trilhasLivres.length ? '<div class="filtros" style="margin-bottom:6px"><select id="ct-trilha">' + opcoes(trilhasLivres, 'Colocar em uma trilha…', '') + '</select><input id="ct-nivel" placeholder="Nível (opcional)" maxlength="40" style="min-height:40px"><button class="btn btn-ghost" id="ct-add">Adicionar</button></div>' : '') +
+    '<div class="sec-tit" style="margin-top:18px">Treinamentos exigidos</div>' +
+    (sit.length ? '<div class="doc-lista">' + sit.map(function(x){ return '<div class="doc-item"><div class="doc-info"><div class="doc-tit">' + esc(nomeCurso(x.curso_id)) + '</div><div class="doc-sub">' + esc(x.motivo) + (x.validade_ate ? ' · validade ' + fmtData(x.validade_ate) : '') + '</div></div>' + pillSit(x) + '</div>'; }).join('') + '</div>' : '<div class="vazio">Nenhum treinamento exigido.</div>') +
+    '<div class="sec-tit" style="margin-top:18px">Histórico (' + feitos.length + ' · ' + Math.round(horas) + ' h)</div>' +
+    (feitos.length ? '<div class="doc-lista">' + feitos.slice(0, 20).map(function(c){ return '<div class="doc-item"><div class="doc-info"><div class="doc-tit">' + esc(nomeCurso(c.curso_id)) + '</div><div class="doc-sub">Concluído em ' + fmtData(c.data_conclusao) + ' · ' + c.carga_horaria + ' h' + (c.validade_ate ? ' · válido até ' + fmtData(c.validade_ate) : '') + (c.origem === 'turma' ? ' · via turma' : ' · lançamento manual') + '</div></div>' +
+      (S.nivel === 'admin' ? '<button class="btn btn-danger" data-rm-concl="' + c.id + '">Excluir</button>' : '') + '</div>'; }).join('') + '</div>' : '<div class="vazio">Nenhuma conclusão registrada.</div>') +
+    (podeOp ? '<div class="modal-actions" style="margin:6px 0 0"><button class="btn btn-ghost" id="ct-concl">Registrar conclusão</button></div>' : '');
+  var add = document.getElementById('ct-add');
+  if (add) add.onclick = async function(){
+    var tid = document.getElementById('ct-trilha').value; if (!tid) { toast('Escolha a trilha.', true); return; }
+    try { await consulta(function(){ return sb.from('pessoa_trilhas').insert({ pessoa_id: pid, trilha_id: +tid, nivel: document.getElementById('ct-nivel').value.trim() || null }); }); await recarregarTrein(); toast('Colaborador colocado na trilha.'); } catch (e) { toast('Não foi possível adicionar: ' + (e.message || e), true); }
+  };
+  el.querySelectorAll('[data-rm-trilha]').forEach(function(b){ b.onclick = async function(){
+    if (!window.confirm('Remover o colaborador desta trilha?')) return;
+    try { await consulta(function(){ return sb.from('pessoa_trilhas').delete().eq('pessoa_id', pid).eq('trilha_id', +b.dataset.rmTrilha).select('pessoa_id'); }); await recarregarTrein(); } catch (e) { toast('Não foi possível remover: ' + (e.message || e), true); } }; });
+  el.querySelectorAll('[data-concl-trilha]').forEach(function(b){ b.onclick = async function(){
+    try { await consulta(function(){ return sb.from('pessoa_trilhas').update({ status:'concluida', concluida_em: hojeISO() }).eq('pessoa_id', pid).eq('trilha_id', +b.dataset.conclTrilha).select('pessoa_id'); }); await recarregarTrein(); toast('Trilha concluída.'); } catch (e) { toast('Não foi possível concluir: ' + (e.message || e), true); } }; });
+  el.querySelectorAll('[data-rm-concl]').forEach(function(b){ b.onclick = async function(){
+    if (!window.confirm('Excluir este registro de conclusão?')) return;
+    try { await consulta(function(){ return sb.from('conclusoes').delete().eq('id', +b.dataset.rmConcl).select('id'); }); await recarregarTrein(); toast('Registro excluído.'); } catch (e) { toast('Não foi possível excluir: ' + (e.message || e), true); } }; });
+  var cc = document.getElementById('ct-concl');
+  if (cc) cc.onclick = function(){
+    abrirG({ titulo: 'Registrar conclusão · ' + nomeColab(pid), textoSalvar: 'Registrar',
+      corpo: '<div class="form-grid">' + selG('curso_id', 'Curso *', S.cursos.filter(function(c){ return c.ativo; }).map(function(c){ return [c.id, c.nome]; }), '', { full:true }) + campoG('data', 'Data de conclusão *', 'date', hojeISO(), { attrs:' max="' + hojeISO() + '"' }) +
+        campoG('horas', 'Carga horária (h)', 'number', '', { attrs:' min="0" max="999" step="0.5" placeholder="vazio = a do curso"' }) + '</div><p class="modal-note">Use para treinamentos feitos fora de uma turma da agenda (curso externo, da montadora, etc.). A validade é calculada pelo curso.</p>',
+      aoSalvar: async function(){
+        if (!gv('curso_id')) gErro('Escolha o curso.');
+        if (!gv('data')) gErro('Informe a data.');
+        await consulta(function(){ return sb.from('conclusoes').insert({ pessoa_id: pid, curso_id: +gv('curso_id'), data_conclusao: gv('data'), carga_horaria: gv('horas') ? +gv('horas') : 0, origem: 'manual' }); });
+        await recarregarTrein(); toast('Conclusão registrada.');
+      } });
+  };
+}
 
 iniciar();
 </script>
