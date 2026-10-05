@@ -1306,6 +1306,13 @@ function avatarPessoa(p){
   var foto = p.avatar_url ? '<img src="' + esc(p.avatar_url) + '" alt="" style="position:absolute;inset:0" onerror="this.remove()">' : '';
   return '<span class="avatar" style="background:' + corAvatar(p.nome) + ';position:relative">' + esc(iniciais(p.nome)) + foto + '</span>';
 }
+// matrícula completa = 0 + filial(5) + número (normalmente 6 dígitos, às vezes mais); o que vale é o número, sem zeros à esquerda (000668 -> 668)
+function matCurta(p){
+  var m = String((p && p.matricula) || '').replace(/\D/g, '');
+  if (!m) return '';
+  var n = (m.length > 6 ? m.slice(6) : m).replace(/^0+/, ''); // tira o prefixo (0 + filial); sobra o número, de qualquer tamanho
+  return n || '0';
+}
 function nomeColab(id){ return id && S.mapColab[id] ? S.mapColab[id].nome : '—'; }
 function nomeFilialColab(id){ return S.mapFilial[id] || '—'; }
 
@@ -1363,7 +1370,7 @@ function colabFiltrados(){
     if (f.filial && p.filial_id !== f.filial) return false;
     if (f.area && areaChave(p) !== f.area) return false;
     if (f.gestor && p.gestor_imediato_id !== f.gestor) return false;
-    if (q && [p.nome, p.matricula, p.cargo, p.centro_custo].join(' ').toLowerCase().indexOf(q) < 0) return false;
+    if (q && [p.nome, matCurta(p), p.matricula, p.cargo, p.centro_custo].join(' ').toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
 }
@@ -1376,7 +1383,7 @@ function renderColab(){
       lista.map(function(p){
         return '<tr data-colab="' + p.id + '"><td><div class="quem">' + avatarPessoa(p) + '<div><div class="q-nome">' + esc(p.nome) + '</div>' +
           (p.inativo ? '<div class="q-sub">Inativo</div>' : '') + '</div></div></td>' +
-          '<td class="cod">' + esc(p.matricula || '—') + '</td><td class="cel" title="' + esc(capitalizarCargo(p.cargo)) + '">' + esc(capitalizarCargo(p.cargo) || '—') + '</td><td class="cel">' + esc(capitalizarArea(p.centro_custo) || '—') + '</td>' +
+          '<td class="cod">' + esc(matCurta(p) || '—') + '</td><td class="cel" title="' + esc(capitalizarCargo(p.cargo)) + '">' + esc(capitalizarCargo(p.cargo) || '—') + '</td><td class="cel">' + esc(capitalizarArea(p.centro_custo) || '—') + '</td>' +
           '<td class="cel">' + esc(nomeFilialColab(p.filial_id)) + '</td><td class="cel" title="' + esc(nomeColab(p.gestor_imediato_id)) + '">' + esc(nomeColab(p.gestor_imediato_id)) + '</td><td style="white-space:nowrap">' + fmtData(p.admissao) + '</td>' +
           (comDocs ? '<td class="num">' + (S.docCont[p.id] || 0) + '</td>' : '') + '</tr>';
       }).join('') + '</tbody></table>'
@@ -1392,7 +1399,7 @@ async function exportarColabExcel(){
   try { await registrarExportacao('excel', 'colaboradores (' + lista.length + ')', S.fc); }
   catch (e) { toast('Exportação bloqueada: não foi possível registrar. ' + (e.message || ''), true); return; }
   var linhas = lista.map(function(p){
-    return { 'Nome': p.nome, 'Matrícula': p.matricula || '', 'Cargo': capitalizarCargo(p.cargo), 'Área': capitalizarArea(p.centro_custo),
+    return { 'Nome': p.nome, 'Matrícula': matCurta(p), 'Cargo': capitalizarCargo(p.cargo), 'Área': capitalizarArea(p.centro_custo),
       'Filial': nomeFilialColab(p.filial_id), 'Gestor': p.gestor_imediato_id ? nomeColab(p.gestor_imediato_id) : '',
       'Admissão': p.admissao ? fmtData(p.admissao) : '', 'Situação': p.inativo ? 'Inativo' : 'Ativo' };
   });
@@ -1474,7 +1481,7 @@ async function abrirColab(id){
   var p = S.mapColab[id]; if (!p) return;
   S.colabAberto = id;
   document.getElementById('colab-titulo').textContent = p.nome;
-  var itens = [['Matrícula', p.matricula || '—'], ['Cargo', capitalizarCargo(p.cargo) || '—'], ['Área', capitalizarArea(p.centro_custo) || '—'],
+  var itens = [['Matrícula', matCurta(p) || '—'], ['Cargo', capitalizarCargo(p.cargo) || '—'], ['Área', capitalizarArea(p.centro_custo) || '—'],
     ['Filial', nomeFilialColab(p.filial_id)], ['Gestor imediato', nomeColab(p.gestor_imediato_id)], ['Admissão', fmtData(p.admissao)],
     ['Situação', p.inativo ? 'Inativo (desligado)' : 'Ativo'], ['É gestor', p.gestor ? 'Sim' : 'Não']];
   document.getElementById('colab-corpo').innerHTML =
@@ -1749,7 +1756,7 @@ function sitFiltradaPend(){
     if (f.curso && String(x.curso_id) !== String(f.curso)) return false;
     if (f.situacao === 'resolver' && x.situacao === 'ok') return false;
     if (f.situacao && f.situacao !== 'resolver' && f.situacao !== 'todas' && x.situacao !== f.situacao) return false;
-    if (q && [p.nome, p.matricula, nomeCurso(x.curso_id)].join(' ').toLowerCase().indexOf(q) < 0) return false;
+    if (q && [p.nome, matCurta(p), p.matricula, nomeCurso(x.curso_id)].join(' ').toLowerCase().indexOf(q) < 0) return false;
     return true;
   }).sort(function(a, b){
     var ordem = { vencido:0, vencendo:1, pendente:2, ok:3 };
@@ -1777,7 +1784,7 @@ async function exportarPendExcel(){
   catch (e) { toast('Exportação bloqueada: não foi possível registrar. ' + (e.message || ''), true); return; }
   var linhas = lista.map(function(x){
     var p = S.mapColab[x.pessoa_id] || {};
-    return { 'Colaborador': p.nome || '', 'Matrícula': p.matricula || '', 'Filial': nomeFilialColab(p.filial_id), 'Área': capitalizarArea(p.centro_custo), 'Gestor': nomeColab(p.gestor_imediato_id),
+    return { 'Colaborador': p.nome || '', 'Matrícula': matCurta(p), 'Filial': nomeFilialColab(p.filial_id), 'Área': capitalizarArea(p.centro_custo), 'Gestor': nomeColab(p.gestor_imediato_id),
       'Curso': nomeCurso(x.curso_id), 'Exigido por': x.motivo, 'Última conclusão': x.ultima_conclusao ? fmtData(x.ultima_conclusao) : '', 'Validade': x.validade_ate ? fmtData(x.validade_ate) : '',
       'Situação': { pendente:'Pendente', vencido:'Vencido', vencendo:'Vencendo', ok:'Em dia' }[x.situacao] };
   });
@@ -2177,7 +2184,7 @@ function entregasFiltradas(){
     if (f.status === 'alerta' && !emAlertaEntrega(e)) return false;
     if ((f.status === 'assinado' || f.status === 'cancelado') && e.status !== f.status) return false;
     if (f.filial && p.filial_id !== f.filial) return false;
-    if (q && [p.nome, p.matricula, codEntrega(e.id), e.itens].join(' ').toLowerCase().indexOf(q) < 0) return false;
+    if (q && [p.nome, matCurta(p), p.matricula, codEntrega(e.id), e.itens].join(' ').toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
 }
@@ -2223,7 +2230,7 @@ function renderUniformes(){
         if (e.status === 'aguardando') acoes += '<button class="btn btn-primary" data-uni-anexar="' + e.id + '" title="Anexar o termo assinado">Anexar</button><button class="btn btn-danger" data-uni-cancelar="' + e.id + '">Cancelar</button>';
         if (e.status === 'assinado') acoes += '<button class="btn btn-ghost" data-uni-ver="' + e.id + '" title="Abrir o termo assinado"><svg><use href="#i-olho"/></svg>Assinado</button>';
         return '<tr style="cursor:default"><td><div class="quem">' + avatarPessoa(p.id ? p : { nome:'?' }) + '<div><div class="q-nome">' + esc(p.nome || '—') + '</div>' +
-          '<div class="q-sub">' + codEntrega(e.id) + (e.itens ? ' · ' + esc(e.itens) : '') + '</div></div></div></td><td class="cod">' + esc(p.matricula || '—') + '</td><td>' + esc(nomeFilialColab(p.filial_id)) + '</td>' +
+          '<div class="q-sub">' + codEntrega(e.id) + (e.itens ? ' · ' + esc(e.itens) : '') + '</div></div></div></td><td class="cod">' + esc(matCurta(p) || '—') + '</td><td>' + esc(nomeFilialColab(p.filial_id)) + '</td>' +
           '<td>' + fmtData(e.data_entrega) + '</td><td class="num">' + e.quantidade + '</td><td>' + pillEntrega(e) + '</td><td><div class="acoes-linha">' + acoes + '</div></td></tr>';
       }).join('') + '</tbody></table>'
     : '<div class="vazio" style="padding:28px">' + (S.entregas.length ? 'Nenhuma entrega com esses filtros.' : 'Nenhuma entrega registrada ainda. Use “Nova entrega”.') + '</div>';
@@ -2273,7 +2280,7 @@ async function gerarTermoPdf(e){
   if (!window.jspdf || !window.jspdf.jsPDF) { toast('O gerador de PDF ainda está carregando. Tente de novo em instantes.', true); return; }
   var p = S.mapColab[e.pessoa_id] || {};
   var AZUL = [25, 85, 255], TINTA = [24, 28, 45], CINZA = [110, 116, 135];
-  var logo = await logoPng('#1955FF');
+  var logo = await logoPng('#000000');
   var doc = new window.jspdf.jsPDF({ unit:'mm', format:'a4' });
   var L = 22, R = 188, W = R - L;
 
@@ -2291,7 +2298,7 @@ async function gerarTermoPdf(e){
   var d = new Date(e.data_entrega + 'T12:00:00');
   var dataExt = fmtData(e.data_entrega) + ', ' + d.toLocaleDateString('pt-BR', { weekday:'long' });
   var itens = textoItens(e);
-  var decl = 'Eu, ' + (p.nome || '—') + ', matrícula ' + (p.matricula || '—') + ', lotado(a) na filial ' + nomeFilialColab(p.filial_id) +
+  var decl = 'Eu, ' + (p.nome || '—') + ', matrícula ' + (matCurta(p) || '—') + ', lotado(a) na filial ' + nomeFilialColab(p.filial_id) +
     ', declaro ter recebido no dia ' + dataExt + ', ' + e.quantidade + (e.quantidade === 1 ? ' unidade' : ' unidades') + ' do uniforme da Deva' + (itens ? ', contendo ' + itens : '') +
     ', em bom estado de conservação. Comprometo-me a utilizá-los exclusivamente durante o exercício das minhas atividades, a zelar pela sua conservação e a comunicar ao Departamento de Recursos Humanos qualquer perda, dano ou necessidade de reposição, bem como a devolvê-los, nas condições em que se encontrarem, em caso de encerramento do contrato de trabalho ou de término das minhas atividades junto à empresa.';
   doc.setFont('helvetica', 'normal'); doc.setFontSize(11.5); doc.setTextColor(TINTA[0], TINTA[1], TINTA[2]);
@@ -2327,7 +2334,7 @@ async function gerarTermoPdf(e){
   doc.setDrawColor(TINTA[0], TINTA[1], TINTA[2]); doc.setLineWidth(0.35); doc.line(52, y, 158, y);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text(p.nome || '', 105, y + 6, { align:'center' });
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(CINZA[0], CINZA[1], CINZA[2]);
-  doc.text('Assinatura do colaborador · Matrícula ' + (p.matricula || '—'), 105, y + 11.5, { align:'center' });
+  doc.text('Assinatura do colaborador · Matrícula ' + (matCurta(p) || '—'), 105, y + 11.5, { align:'center' });
 
   // rodapé
   doc.setDrawColor(200, 205, 220); doc.setLineWidth(0.25); doc.line(L, 281, R, 281);
@@ -2341,7 +2348,7 @@ async function gerarTermoPdf(e){
 function abrirNovaEntrega(){
   if (!podeEditar()) return;
   var ativos = S.colab.filter(function(p){ return !p.inativo; }).sort(function(a, b){ return a.nome.localeCompare(b.nome, 'pt-BR'); });
-  var rot = function(p){ return p.nome + ' — ' + (p.matricula || 'sem matrícula'); };
+  var rot = function(p){ return p.nome + ' — ' + (matCurta(p) || 'sem matrícula'); };
   var num = ' min="0" max="99" inputmode="numeric"';
   var corpo = '<div class="form-grid">' +
     '<label class="campo full"><span>Colaborador</span><input data-k="colab" type="text" list="dl-colab" placeholder="Digite o nome ou a matrícula" autocomplete="off"></label>' +
@@ -2353,7 +2360,7 @@ function abrirNovaEntrega(){
     '</div><p class="modal-note">Informe quantas peças de cada tipo foram entregues. Ao salvar, o termo em PDF é baixado para impressão; depois da assinatura, anexe o documento digitalizado nesta tela.</p>';
   abrirG({ titulo:'Nova entrega de uniforme', corpo:corpo, textoSalvar:'Salvar e baixar termo', aoSalvar:async function(){
     var txt = gv('colab'), p = ativos.find(function(x){ return rot(x) === txt; });
-    if (!p) { var q = txt.toLowerCase(); var achados = ativos.filter(function(x){ return q && (x.nome.toLowerCase() === q || x.matricula === txt); }); if (achados.length === 1) p = achados[0]; }
+    if (!p) { var q = txt.toLowerCase(); var achados = ativos.filter(function(x){ return q && (x.nome.toLowerCase() === q || matCurta(x) === txt || x.matricula === txt); }); if (achados.length === 1) p = achados[0]; }
     if (!p) gErro('Escolha um colaborador da lista.');
     var data = gv('data');
     var c = parseInt(gv('camisas'), 10) || 0, k = parseInt(gv('calcas'), 10) || 0, b = parseInt(gv('blusas'), 10) || 0;
