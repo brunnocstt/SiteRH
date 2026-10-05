@@ -2246,15 +2246,17 @@ document.getElementById('t-uni').addEventListener('click', function(ev){
 function entregaPorId(id){ return S.entregas.find(function(e){ return String(e.id) === String(id); }); }
 
 /* ---- PDF do termo (jsPDF) ---- */
-function logoPng(cor){
+function logoPng(cor, alpha, largPx){
+  // IVECO em cima, DEVA embaixo, centralizadas (o símbolo do app é horizontal: 6 traços = IVECO, 5 = DEVA)
   return new Promise(function(resolve){
     var fim = setTimeout(function(){ resolve(null); }, 1500);
     try {
-      var sym = document.getElementById('i-logo-ivecodeva');
-      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 183 15" width="915" height="75" fill="' + cor + '" style="color:' + cor + '">' + sym.innerHTML + '</svg>';
-      var img = new Image();
+      var ds = [].slice.call(document.getElementById('i-logo-ivecodeva').querySelectorAll('path')).map(function(x){ return '<path d="' + x.getAttribute('d') + '"/>'; });
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 34" width="900" height="340" fill="' + cor + '">' +
+        '<g>' + ds.slice(0, 6).join('') + '</g><g transform="translate(-97.7,19)">' + ds.slice(6).join('') + '</g></svg>';
+      var h = Math.round(largPx * 34 / 90), img = new Image();
       img.onload = function(){
-        try { var c = document.createElement('canvas'); c.width = 915; c.height = 75; c.getContext('2d').drawImage(img, 0, 0, 915, 75); clearTimeout(fim); resolve(c.toDataURL('image/png')); }
+        try { var c = document.createElement('canvas'); c.width = largPx; c.height = h; var cx = c.getContext('2d'); cx.globalAlpha = alpha; cx.drawImage(img, 0, 0, largPx, h); clearTimeout(fim); resolve(c.toDataURL('image/png')); }
         catch (e) { clearTimeout(fim); resolve(null); }
       };
       img.onerror = function(){ clearTimeout(fim); resolve(null); };
@@ -2280,19 +2282,20 @@ async function gerarTermoPdf(e){
   if (!window.jspdf || !window.jspdf.jsPDF) { toast('O gerador de PDF ainda está carregando. Tente de novo em instantes.', true); return; }
   var p = S.mapColab[e.pessoa_id] || {};
   var AZUL = [25, 85, 255], TINTA = [24, 28, 45], CINZA = [110, 116, 135];
-  var logo = await logoPng('#000000');
+  var logo = await logoPng('#000000', 1, 450), marca = await logoPng('#000000', 0.06, 900);
   var doc = new window.jspdf.jsPDF({ unit:'mm', format:'a4' });
-  var L = 22, R = 188, W = R - L;
+  var L = 15, R = 195, W = R - L;
 
-  // faixa azul no topo + logo
+  // papel timbrado: marca d'água centralizada atrás de tudo, faixa azul e logo no topo
+  if (marca) doc.addImage(marca, 'PNG', 40, 124, 130, 130 * 34 / 90);
   doc.setFillColor(AZUL[0], AZUL[1], AZUL[2]); doc.rect(0, 0, 210, 5, 'F');
-  if (logo) doc.addImage(logo, 'PNG', L, 17, 62, 62 * 15 / 183);
-  else { doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(AZUL[0], AZUL[1], AZUL[2]); doc.text('DEVA', L, 22); }
+  if (logo) doc.addImage(logo, 'PNG', 90, 11, 30, 30 * 34 / 90);
+  else { doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.text('IVECO DEVA', 105, 20, { align:'center' }); }
   doc.setDrawColor(AZUL[0], AZUL[1], AZUL[2]); doc.setLineWidth(0.6); doc.line(L, 29, R, 29);
 
   // título
   doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(AZUL[0], AZUL[1], AZUL[2]);
-  doc.text('TERMO DE ENTREGA DE UNIFORME', 105, 46, { align:'center', charSpace:0.5 });
+  doc.text('TERMO DE ENTREGA DE UNIFORME', 105, 43, { align:'center', charSpace:0.5 });
 
   // declaração
   var d = new Date(e.data_entrega + 'T12:00:00');
@@ -2302,7 +2305,7 @@ async function gerarTermoPdf(e){
     ', declaro ter recebido no dia ' + dataExt + ', ' + e.quantidade + (e.quantidade === 1 ? ' unidade' : ' unidades') + ' do uniforme da Deva' + (itens ? ', contendo ' + itens : '') +
     ', em bom estado de conservação. Comprometo-me a utilizá-los exclusivamente durante o exercício das minhas atividades, a zelar pela sua conservação e a comunicar ao Departamento de Recursos Humanos qualquer perda, dano ou necessidade de reposição, bem como a devolvê-los, nas condições em que se encontrarem, em caso de encerramento do contrato de trabalho ou de término das minhas atividades junto à empresa.';
   doc.setFont('helvetica', 'normal'); doc.setFontSize(11.5); doc.setTextColor(TINTA[0], TINTA[1], TINTA[2]);
-  var y = 64, lh = 11.5 * 0.3528 * 1.65;
+  var y = 58, lh = 11.5 * 0.3528 * 1.65;
   var linhas = doc.splitTextToSize(decl, W);
   doc.text(decl, L, y, { maxWidth:W, align:'justify', lineHeightFactor:1.65 });
   y += linhas.length * lh + 8;
@@ -2331,7 +2334,7 @@ async function gerarTermoPdf(e){
   y += 34;
 
   // assinatura
-  doc.setDrawColor(TINTA[0], TINTA[1], TINTA[2]); doc.setLineWidth(0.35); doc.line(52, y, 158, y);
+  doc.setDrawColor(TINTA[0], TINTA[1], TINTA[2]); doc.setLineWidth(0.35); doc.line(50, y, 160, y);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text(p.nome || '', 105, y + 6, { align:'center' });
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(CINZA[0], CINZA[1], CINZA[2]);
   doc.text('Assinatura do colaborador · Matrícula ' + (matCurta(p) || '—'), 105, y + 11.5, { align:'center' });
