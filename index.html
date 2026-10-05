@@ -330,11 +330,21 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 @media (max-width:560px){ .part-linha{ grid-template-columns:1fr 1fr; } }
 
 /* alternância de visão (painel/lista, lista/organograma) */
+.seg-wrap{ margin-bottom:14px; }
 .seg{ display:inline-flex; background:var(--surface-2); border-radius:999px; padding:3px; gap:2px; }
 .seg a{ padding:6px 16px; border-radius:999px; font-size:.8rem; font-weight:700; color:var(--ink-soft); text-decoration:none; transition:background .15s, color .15s; }
 .seg a:hover{ color:var(--ink); }
 .seg a.ativa{ background:var(--accent); color:#fff; }
 .head-actions{ align-items:center; }
+/* importação */
+.imp-cards{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; margin:6px 0 14px; }
+.imp-card{ background:var(--surface-2); border-radius:16px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; }
+.imp-card b{ font-size:1.4rem; line-height:1.1; }
+.imp-card span{ font-size:.7rem; color:var(--muted); }
+.imp-card.ok b{ color:var(--good); } .imp-card.azul b{ color:var(--accent); }
+.imp-avisos{ background:var(--warn-soft); color:var(--warn); border-radius:14px; padding:10px 14px; font-size:.78rem; font-weight:600; display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+.sel-mini{ border:1px solid var(--line); background:var(--surface); border-radius:10px; padding:5px 8px; font-size:.8rem; min-height:32px; width:100%; }
+@media (max-width:560px){ .imp-cards{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
 /* gráfico mensal */
 .mes-topo{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
 .mes-topo label{ display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--muted); }
@@ -471,13 +481,13 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
   <main class="main">
     <!-- ===== Painel ===== -->
     <section class="page" id="page-painel">
+      <div class="seg-wrap"><div class="seg" role="tablist"><a href="#painel" data-seg="painel">Painel</a><a href="#vagas" data-seg="vagas">Lista</a></div></div>
       <div class="page-head">
         <div>
           <h1>Painel de vagas</h1>
           <p id="painel-sub">Recrutamento e Seleção</p>
         </div>
         <div class="head-actions">
-          <div class="seg" role="tablist"><a href="#painel" data-seg="painel">Painel</a><a href="#vagas" data-seg="vagas">Lista</a></div>
           <button class="btn btn-ghost" onclick="exportarPdf('painel')"><svg><use href="#i-pdf"/></svg>PDF</button>
         </div>
       </div>
@@ -542,13 +552,14 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 
     <!-- ===== Vagas ===== -->
     <section class="page" id="page-vagas" hidden>
+      <div class="seg-wrap"><div class="seg" role="tablist"><a href="#painel" data-seg="painel">Painel</a><a href="#vagas" data-seg="vagas">Lista</a></div></div>
       <div class="page-head">
         <div>
           <h1>Vagas</h1>
           <p id="vagas-sub"></p>
         </div>
         <div class="head-actions">
-          <div class="seg" role="tablist"><a href="#painel" data-seg="painel">Painel</a><a href="#vagas" data-seg="vagas">Lista</a></div>
+          <button class="btn btn-ghost" id="btn-importar" hidden onclick="abrirImportacao()"><svg><use href="#i-excel"/></svg>Importar planilha</button>
           <button class="btn btn-ghost" onclick="exportarExcel()"><svg><use href="#i-excel"/></svg>Excel</button>
           <button class="btn btn-ghost" onclick="exportarPdf('vagas')"><svg><use href="#i-pdf"/></svg>PDF</button>
           <button class="btn btn-primary" id="btn-nova-vaga" hidden onclick="abrirFormVaga()"><svg><use href="#i-mais"/></svg>Nova vaga</button>
@@ -580,12 +591,13 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 
     <!-- ===== Organograma ===== -->
     <section class="page" id="page-organograma" hidden>
+      <div class="seg-wrap"><div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div></div>
       <div class="page-head">
         <div>
           <h1>Organograma</h1>
           <p id="org-sub">Quem responde a quem. A estrutura é mantida no Hub; aqui é só consulta.</p>
         </div>
-        <div class="head-actions"><div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div></div>
+        
       </div>
       <div class="filtros" id="filtros-org"></div>
       <div class="tabela-wrap"><div class="org-tree" id="org-tree"></div></div>
@@ -593,13 +605,13 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 
     <!-- ===== Colaboradores ===== -->
     <section class="page" id="page-colaboradores" hidden>
+      <div class="seg-wrap"><div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div></div>
       <div class="page-head">
         <div>
           <h1>Colaboradores</h1>
           <p id="colab-sub"></p>
         </div>
         <div class="head-actions">
-          <div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div>
           <button class="btn btn-ghost" onclick="exportarColabExcel()"><svg><use href="#i-excel"/></svg>Excel</button>
         </div>
       </div>
@@ -646,7 +658,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
           <label class="campo"><span>Área</span><input name="area" maxlength="80" list="lista-areas" autocomplete="off"></label>
           <label class="campo"><span>Gestor solicitante</span><select name="gestor_id"></select></label>
           <label class="campo"><span>Tipo</span>
-            <select name="tipo"><option value="substituicao">Substituição</option><option value="aumento_quadro">Aumento de quadro</option></select>
+            <select name="tipo"><option value="substituicao">Substituição</option><option value="aumento_quadro">Aumento de quadro</option><option value="">Não informado</option></select>
           </label>
           <label class="campo"><span>Data de abertura *</span><input type="date" name="data_abertura" required></label>
           <label class="campo"><span>Quantidade de posições</span><input type="number" name="quantidade" min="1" max="99" value="1"></label>
@@ -779,7 +791,7 @@ var S = {
   mapFilial: {}, mapGestor: {}, mapOrigem: {}, mapMotivo: {},
   pagina: 'painel',
   fp: { filial:'', gestor:'', cargo:'', area:'', de:'', ate:'' },               // filtros do painel
-  fv: { busca:'', filial:'', gestor:'', status:'abertas', sla:'' }              // filtros da lista
+  fv: { busca:'', filial:'', gestor:'', status:'abertas', sla:'', proc:'' }              // filtros da lista
 };
 
 var ETAPAS = [
@@ -833,6 +845,7 @@ function situacao(v){
   return r;
 }
 function pillSla(v){
+  if (v.origem_processo === 'movimentacao') return '<span class="pill">—</span>';
   var s = situacao(v);
   var ico = s.cls === 'bad' || s.cls === 'warn' ? '#i-alerta' : (s.cls === 'ok' ? '#i-ok' : '');
   return '<span class="pill ' + s.cls + '">' + (ico ? '<svg><use href="' + ico + '"/></svg>' : '') + esc(s.rotulo) + '</span>';
@@ -861,10 +874,12 @@ async function carregarBaseInicial(){
     consulta(function(){ return sb.rpc('gestores'); }),
     consulta(function(){ return sb.from('origens').select('id,nome,ativo').order('nome'); }),
     consulta(function(){ return sb.from('motivos_cancelamento').select('id,nome,ativo').order('nome'); }),
-    consulta(function(){ return sb.from('vagas').select('*').order('data_abertura', { ascending:false }).limit(5000); })
+    consulta(function(){ return sb.from('vagas').select('*').order('data_abertura', { ascending:false }).limit(5000); }),
+    consulta(function(){ return sb.from('atividade_etapa').select('atividade,etapa').order('atividade'); })
   ]);
   if (res[0]) S.config = res[0];
   S.filiais = res[1] || []; S.gestores = res[2] || []; S.origens = res[3] || []; S.motivos = res[4] || []; S.vagas = res[5] || [];
+  S.ativEtapa = {}; (res[6] || []).forEach(function(a){ S.ativEtapa[a.atividade] = a.etapa; });
   S.mapFilial = {}; S.filiais.forEach(function(f){ S.mapFilial[f.id] = f.nome; });
   S.mapGestor = {}; S.gestores.forEach(function(g){ S.mapGestor[g.id] = g.nome; });
   S.mapOrigem = {}; S.origens.forEach(function(o){ S.mapOrigem[o.id] = o.nome; });
@@ -920,6 +935,7 @@ function montarUsuario(){
   document.getElementById('mobile-avatar-btn').innerHTML = avatarHtml();
   document.getElementById('s-user-name-lbl').textContent = S.eu.nome;
   document.getElementById('btn-nova-vaga').hidden = !podeEditar();
+  document.getElementById('btn-importar').hidden = !podeEditar();
   document.querySelector('#s-nav [data-page="uniformes"]').hidden = !podeEditar();
   document.querySelector('#s-nav [data-page="configuracoes"]').hidden = S.nivel !== 'admin';
 }
@@ -977,6 +993,7 @@ function montarFiltros(){
     '<select data-f="sla">' + opcoes([['atrasada','Atrasadas'], ['vencendo','Vencendo (5 dias)'], ['critica','Críticas'], ['no_prazo','No prazo']], 'Todo SLA', fv.sla) + '</select>' +
     '<select data-f="filial">' + opcoes(filiaisComVaga(), 'Todas as filiais', fv.filial) + '</select>' +
     '<select data-f="gestor">' + opcoes(gestoresComVaga(), 'Todos os gestores', fv.gestor) + '</select>' +
+    '<select data-f="proc">' + opcoes([['contratacao','Contratações'], ['movimentacao','Movimentações']], 'Todos os processos', fv.proc) + '</select>' +
     '<button class="link-limpar" data-limpar>Limpar</button>';
 }
 function ligarFiltros(idWrap, alvo){
@@ -994,7 +1011,7 @@ ligarFiltros('filtros-vagas', function(){ return S.fv; });
 
 function filtrarPainel(v){
   var f = S.fp;
-  return (!f.filial || v.filial_id === f.filial) && (!f.gestor || v.gestor_id === f.gestor) &&
+  return v.origem_processo !== 'movimentacao' && (!f.filial || v.filial_id === f.filial) && (!f.gestor || v.gestor_id === f.gestor) &&
          (!f.area || v.area === f.area) && (!f.cargo || v.cargo === f.cargo);
 }
 function noPeriodo(data){ return data && (!S.fp.de || data >= S.fp.de) && (!S.fp.ate || data <= S.fp.ate); }
@@ -1038,7 +1055,7 @@ function mediaPor(lista, chave, nomeDe){
   return Object.keys(m).map(function(k){ return { id:k, nome:nomeDe(k), valor:Math.round(media(m[k])), n:m[k].length }; });
 }
 function irParaLista(filtros){
-  Object.assign(S.fv, { busca:'', filial:'', gestor:'', status:'abertas', sla:'' }, filtros);
+  Object.assign(S.fv, { busca:'', filial:'', gestor:'', status:'abertas', sla:'', proc:'' }, filtros);
   montarFiltros(); location.hash = 'vagas';
 }
 
@@ -1053,7 +1070,7 @@ function renderPainel(){
   var tempoMedio = media(encerradasPer.map(function(v){ return situacao(v).dias; }));
   var pct = encerradasPer.length ? Math.round(noPrazo.length / encerradasPer.length * 100) : null;
 
-  document.getElementById('painel-sub').textContent = 'Recrutamento e Seleção · SLA de ' + S.config.sla_dias + ' dias · período ' + fmtData(S.fp.de) + ' a ' + fmtData(S.fp.ate);
+  document.getElementById('painel-sub').textContent = 'Recrutamento e Seleção · período ' + fmtData(S.fp.de) + ' a ' + fmtData(S.fp.ate);
   var kpis = [
     { l:'Vagas abertas', v:abertas.length, s:abertas.reduce(function(a,v){ return a + (v.quantidade||1); }, 0) + ' posições · situação atual', go:{ status:'abertas' } },
     { l:'Fora do SLA', v:atrasadas.length, s:'abertas há mais de ' + S.config.sla_dias + ' dias', cls: atrasadas.length ? 'alerta' : '', go:{ sla:'atrasada' } },
@@ -1096,9 +1113,11 @@ function filtrarLista(v){
   if (f.sla && f.sla !== 'critica' && s.chave !== f.sla) return false;
   if (f.filial && v.filial_id !== f.filial) return false;
   if (f.gestor && v.gestor_id !== f.gestor) return false;
+  if (f.proc === 'contratacao' && v.origem_processo === 'movimentacao') return false;
+  if (f.proc === 'movimentacao' && v.origem_processo !== 'movimentacao') return false;
   if (f.busca) {
     var q = f.busca.toLowerCase();
-    var alvo = [codVaga(v.id), v.cargo, v.area, v.candidato_aprovado, nomeFilial(v.filial_id), nomeGestor(v.gestor_id)].join(' ').toLowerCase();
+    var alvo = [codVaga(v.id), v.processo, v.cargo, v.area, v.candidato_aprovado, nomeFilial(v.filial_id), nomeGestor(v.gestor_id)].join(' ').toLowerCase();
     if (alvo.indexOf(q) < 0) return false;
   }
   return true;
@@ -1108,14 +1127,14 @@ function vagasDaLista(){ return S.vagas.filter(filtrarLista); }
 function tabelaVagas(lista){
   return '<table><thead><tr><th>Código</th><th>Cargo</th><th>Filial</th><th>Gestor</th><th>Abertura</th><th class="num">Dias</th><th>Etapa</th><th>SLA</th></tr></thead><tbody>' +
     lista.map(function(v){
-      return '<tr data-id="' + v.id + '"><td class="cod">' + codVaga(v.id) + '</td><td><strong>' + esc(v.cargo) + '</strong>' + (v.quantidade > 1 ? ' <span class="pill">' + v.quantidade + ' posições</span>' : '') + '</td>' +
+      return '<tr data-id="' + v.id + '"><td class="cod">' + codVaga(v.id) + '</td><td><strong>' + esc(v.cargo) + '</strong>' + (v.origem_processo === 'movimentacao' ? ' <span class="pill azul">Movimentação</span>' : '') + (v.quantidade > 1 ? ' <span class="pill">' + v.quantidade + ' posições</span>' : '') + '</td>' +
         '<td>' + esc(nomeFilial(v.filial_id)) + '</td><td>' + esc(nomeGestor(v.gestor_id)) + '</td><td>' + fmtData(v.data_abertura) + '</td>' +
         '<td class="num">' + situacao(v).dias + '</td><td>' + pillEtapa(v) + '</td><td>' + pillSla(v) + '</td></tr>';
     }).join('') + '</tbody></table>';
 }
 function renderVagas(){
   var lista = vagasDaLista();
-  document.getElementById('vagas-sub').textContent = lista.length + (lista.length === 1 ? ' vaga' : ' vagas') + ' · SLA de ' + S.config.sla_dias + ' dias';
+  document.getElementById('vagas-sub').textContent = lista.length + (lista.length === 1 ? ' vaga' : ' vagas');
   document.getElementById('t-vagas').innerHTML = lista.length ? tabelaVagas(lista) : '<div class="vazio" style="padding:28px">Nenhuma vaga com esses filtros.</div>';
 }
 document.addEventListener('click', function(e){
@@ -1138,9 +1157,13 @@ async function abrirDetalhe(id){
   document.getElementById('det-titulo').textContent = codVaga(v.id) + ' · ' + v.cargo;
   var itens = [
     ['Filial', nomeFilial(v.filial_id)], ['Área', v.area || '—'], ['Gestor solicitante', nomeGestor(v.gestor_id)],
-    ['Tipo', v.tipo === 'aumento_quadro' ? 'Aumento de quadro' : 'Substituição'], ['Posições', v.quantidade],
+    ['Tipo', v.origem_processo === 'movimentacao' ? 'Movimentação' : (v.tipo === 'aumento_quadro' ? 'Aumento de quadro' : v.tipo === 'substituicao' ? 'Substituição' : 'Não informado')], ['Posições', v.quantidade],
     ['Abertura', fmtData(v.data_abertura)], ['Etapa atual', NOME_ETAPA[v.status]]
   ];
+  if (v.processo) itens.push(['Nº do processo', v.processo], ['Atividade atual', v.atividade_atual || '—']);
+  if (v.orcado != null) itens.push(['Orçado', v.orcado ? 'Sim' : 'Não']);
+  if (v.cargo_origem) itens.push(['Cargo atual', v.cargo_origem]);
+  if (v.data_vigencia) itens.push(['Vigência', fmtData(v.data_vigencia)]);
   if (v.status === 'encerrada') itens.push(['Fechamento', fmtData(v.data_fechamento)], ['Aprovado', v.candidato_aprovado || '—'], ['Origem do aprovado', S.mapOrigem[v.origem_id] || '—']);
   if (v.status === 'cancelada') itens.push(['Cancelamento', fmtData(v.data_cancelamento)], ['Motivo', S.mapMotivo[v.motivo_cancelamento_id] || '—']);
   var slaTxt = estaAberta(v)
@@ -1191,7 +1214,7 @@ function abrirFormVaga(v){
   form.motivo_cancelamento_id.innerHTML = opcoes(S.motivos.filter(function(m){ return m.ativo || (v && v.motivo_cancelamento_id === m.id); }).map(function(m){ return [m.id, m.nome]; }), 'Selecione…', v ? v.motivo_cancelamento_id : '');
   form.cargo.value = v ? v.cargo : '';
   form.area.value = v ? (v.area || '') : '';
-  form.tipo.value = v ? v.tipo : 'substituicao';
+  form.tipo.value = v ? (v.tipo || '') : 'substituicao';
   form.data_abertura.value = v ? v.data_abertura : hojeISO();
   form.data_abertura.max = hojeISO();
   form.quantidade.value = v ? v.quantidade : 1;
@@ -1215,7 +1238,7 @@ form.addEventListener('submit', async function(e){
     area: form.area.value.trim() || null,
     filial_id: form.filial_id.value || null,
     gestor_id: form.gestor_id.value || null,
-    tipo: form.tipo.value,
+    tipo: form.tipo.value || null,
     data_abertura: form.data_abertura.value,
     quantidade: parseInt(form.quantidade.value, 10) || 1,
     status: st,
@@ -1264,7 +1287,7 @@ async function exportarExcel(){
     var s = situacao(v);
     return {
       'Código': codVaga(v.id), 'Cargo': v.cargo, 'Área': v.area || '', 'Filial': nomeFilial(v.filial_id), 'Gestor': nomeGestor(v.gestor_id),
-      'Tipo': v.tipo === 'aumento_quadro' ? 'Aumento de quadro' : 'Substituição', 'Posições': v.quantidade,
+      'Processo': v.processo || '', 'Tipo': v.origem_processo === 'movimentacao' ? 'Movimentação' : (v.tipo === 'aumento_quadro' ? 'Aumento de quadro' : v.tipo === 'substituicao' ? 'Substituição' : ''), 'Posições': v.quantidade,
       'Abertura': fmtData(v.data_abertura), 'Etapa': NOME_ETAPA[v.status], 'Dias': s.dias, 'SLA': s.rotulo,
       'Fechamento': v.data_fechamento ? fmtData(v.data_fechamento) : '', 'Origem do aprovado': S.mapOrigem[v.origem_id] || '',
       'Cancelamento': v.data_cancelamento ? fmtData(v.data_cancelamento) : '', 'Motivo do cancelamento': S.mapMotivo[v.motivo_cancelamento_id] || ''
@@ -2078,6 +2101,151 @@ function renderTreinColab(pid){
   };
 }
 
+/* ================== importação da planilha de processos ================== */
+S.ativEtapa = {};      // atividade do workflow -> etapa do funil
+S.imp = null;          // estado da importação aberta
+function normTxt(s){ return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim(); }
+function dataDeCelula(v){
+  if (v == null || v === '') return null;
+  var p2 = function(n){ return String(n).padStart(2, '0'); };
+  if (Object.prototype.toString.call(v) === '[object Date]') return isNaN(v) ? null : v.getFullYear() + '-' + p2(v.getMonth() + 1) + '-' + p2(v.getDate());
+  if (typeof v === 'number') { var d = XLSX.SSF.parse_date_code(v); return d ? d.y + '-' + p2(d.m) + '-' + p2(d.d) : null; }
+  var t = String(v).trim(), m = t.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (m) return m[3] + '-' + m[2] + '-' + m[1];
+  m = t.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[0] : null;
+}
+// Lê todas as abas que tenham o cabeçalho "#Processo" + "Tipo de processo" (as abas _ANEXO etc. são ignoradas)
+async function lerPlanilhas(files){
+  var porProcesso = {}, ignoradas = 0, nomes = [];
+  for (var fi = 0; fi < files.length; fi++) {
+    var f = files[fi];
+    nomes.push(f.name);
+    var wb = XLSX.read(await f.arrayBuffer(), { type:'array', cellDates:true });
+    wb.SheetNames.forEach(function(nome){
+      var rows = XLSX.utils.sheet_to_json(wb.Sheets[nome], { header:1, raw:true, defval:null });
+      var h = -1;
+      for (var i = 0; i < Math.min(rows.length, 15); i++) { if (rows[i].some(function(c){ return normTxt(c) === '#processo'; })) { h = i; break; } }
+      if (h < 0) return;
+      var col = {}; rows[h].forEach(function(c, i){ var k = normTxt(c); if (k && col[k] === undefined) col[k] = i; });
+      if (col['tipo de processo'] === undefined) return;
+      var colEnc = Object.keys(col).filter(function(k){ return /encerramento|conclusao|finalizacao|fechamento/.test(k); })[0];
+      var g = function(r, k){ return col[k] === undefined ? null : r[col[k]]; };
+      for (var j = h + 1; j < rows.length; j++) {
+        var r = rows[j], proc = Number(g(r, '#processo'));
+        if (!proc) continue;
+        var tp = normTxt(g(r, 'tipo de processo')), tipo = /requisi/.test(tp) ? 'requisicao' : /moviment/.test(tp) ? 'movimentacao' : null;
+        var abertura = dataDeCelula(g(r, 'abertura'));
+        if (!tipo || !abertura) { ignoradas++; continue; }
+        var stTxt = normTxt(g(r, 'status do processo')), status = 'aberta', statusEstranho = null;
+        if (/cancel/.test(stTxt)) status = 'cancelada';
+        else if (/finaliz|conclu|encerr|fechad/.test(stTxt)) status = 'encerrada';
+        else if (stTxt && !/andamento/.test(stTxt)) statusEstranho = g(r, 'status do processo');
+        var cargoAtual = g(r, 'cargo atual'), novoCargo = g(r, 'novo cargo');
+        var cargo = tipo === 'movimentacao' ? (novoCargo || cargoAtual) : g(r, 'cargo');
+        var fil = String(g(r, 'codigo da filial') == null ? '' : g(r, 'codigo da filial')).match(/^\s*(\d+)/);
+        var orc = normTxt(g(r, 'orcado'));
+        porProcesso[proc] = {
+          processo: proc, tipo_processo: tipo, abertura: abertura, status: status, status_estranho: statusEstranho,
+          atividade: g(r, 'atividade atual') ? String(g(r, 'atividade atual')).trim() : null,
+          quantidade: Number(g(r, 'quantidade de vagas')) || 1,
+          cargo: cargo ? capitalizarCargo(String(cargo).trim()) : null,
+          cargo_origem: tipo === 'movimentacao' && novoCargo && cargoAtual ? capitalizarCargo(String(cargoAtual).trim()) : null,
+          filial_codigo: fil ? fil[1] : null,
+          orcado: orc === 'sim' ? true : orc === 'nao' ? false : null,
+          vigencia: dataDeCelula(g(r, 'data de vigencia')),
+          encerramento: colEnc ? dataDeCelula(r[col[colEnc]]) : null
+        };
+      }
+    });
+  }
+  return { linhas: Object.keys(porProcesso).map(function(k){ return porProcesso[k]; }), ignoradas: ignoradas, nomes: nomes };
+}
+function etapaDaAtividade(atv){
+  var escolha = S.imp && S.imp.escolhas[atv];
+  return escolha || S.ativEtapa[atv] || null;
+}
+function resolverLinha(l){ // etapa final + comparação com o que já existe no site
+  var o = Object.assign({}, l);
+  if (l.status === 'aberta') o.etapa = (l.atividade && etapaDaAtividade(l.atividade)) || 'solicitada';
+  var f = S.filiais.find(function(x){ return String(x.codigo) === String(l.filial_codigo); });
+  o.filial_id = f ? f.id : null;
+  var v = S.vagas.find(function(x){ return String(x.processo) === String(l.processo); });
+  if (!v) o.situacaoImp = 'nova';
+  else {
+    var st = l.status === 'aberta' ? o.etapa : (l.status === 'encerrada' ? 'encerrada' : 'cancelada');
+    var igual = v.status === st && v.quantidade === (l.quantidade || 1) && v.cargo === (l.cargo || '(não informado)') && (v.cargo_origem || null) === (l.cargo_origem || null) &&
+      (v.filial_id || null) === o.filial_id && (v.atividade_atual || null) === (l.atividade || null) && (v.orcado == null ? null : v.orcado) === l.orcado &&
+      (v.data_vigencia || null) === (l.vigencia || null) && v.data_abertura === l.abertura && v.origem_processo === l.tipo_processo;
+    o.situacaoImp = igual ? 'igual' : 'atualizada';
+  }
+  return o;
+}
+function renderPrevImportacao(){
+  var el = document.getElementById('imp-prev'); if (!el) return;
+  var im = S.imp;
+  if (!im || !im.linhas.length) { el.innerHTML = im ? '<div class="aviso-alerta">Nenhum processo reconhecido nesse arquivo. Confira se é a exportação do sistema (colunas “#Processo” e “Tipo de processo”).</div>' : ''; return; }
+  var res = im.linhas.map(resolverLinha), cont = { nova:0, atualizada:0, igual:0 };
+  res.forEach(function(o){ cont[o.situacaoImp]++; });
+  var req = res.filter(function(o){ return o.tipo_processo === 'requisicao'; }).length;
+  var semFilial = res.filter(function(o){ return !o.filial_id; });
+  var codsSem = {}; semFilial.forEach(function(o){ codsSem[o.filial_codigo || '(vazio)'] = 1; });
+  var atvNovas = {}; im.linhas.forEach(function(l){ if (l.status === 'aberta' && l.atividade && !S.ativEtapa[l.atividade]) atvNovas[l.atividade] = 1; });
+  var estranhos = {}; im.linhas.forEach(function(l){ if (l.status_estranho) estranhos[l.status_estranho] = 1; });
+  var semEnc = im.linhas.filter(function(l){ return l.status === 'encerrada' && !l.encerramento; }).length;
+  var presentes = {}; im.linhas.forEach(function(l){ presentes[l.processo] = 1; });
+  var ausentes = S.vagas.filter(function(v){ return v.processo && estaAberta(v) && !presentes[v.processo]; }).length;
+  var html = '<div class="imp-cards">' +
+    '<div class="imp-card"><b>' + res.length + '</b><span>processos lidos<br>' + req + ' contratação · ' + (res.length - req) + ' movimentação</span></div>' +
+    '<div class="imp-card ok"><b>' + cont.nova + '</b><span>novos</span></div>' +
+    '<div class="imp-card azul"><b>' + cont.atualizada + '</b><span>com alteração</span></div>' +
+    '<div class="imp-card"><b>' + cont.igual + '</b><span>sem alteração</span></div></div>';
+  var nomesAtv = Object.keys(atvNovas);
+  if (nomesAtv.length) {
+    html += '<div class="sec-tit">Atividades novas — em que etapa do funil entram?</div>' + nomesAtv.map(function(a){
+      return '<div class="cfg-linha" style="grid-template-columns:1fr 170px"><div class="t" style="word-break:break-all">' + esc(a) + '</div><select data-atv="' + esc(a) + '" class="sel-mini">' +
+        ETAPAS.slice(0, 6).map(function(e){ return '<option value="' + e[0] + '"' + ((im.escolhas[a] || 'solicitada') === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join('') + '</select></div>';
+    }).join('') + '<p class="modal-note">A escolha fica salva e vale para as próximas importações (dá para ajustar em Configurações).</p>';
+  }
+  var av = [];
+  if (semFilial.length) av.push(semFilial.length + ' processo(s) sem filial reconhecida (código: ' + Object.keys(codsSem).join(', ') + '). Entram no site sem filial.');
+  if (semEnc) av.push(semEnc + ' processo(s) finalizado(s) sem data de encerramento na planilha: vale a data de hoje. Se o sistema de origem puder exportar a data de conclusão, o cálculo de SLA fica exato.');
+  if (Object.keys(estranhos).length) av.push('Status não reconhecido tratado como “em andamento”: ' + Object.keys(estranhos).join(', ') + '.');
+  if (ausentes) av.push(ausentes + ' vaga(s) importada(s) antes e ainda abertas no site não aparecem nesta planilha. Nada é alterado nelas; se foram concluídas, ajuste manualmente.');
+  if (im.ignoradas) av.push(im.ignoradas + ' linha(s) ignorada(s) por não terem tipo de processo ou data de abertura.');
+  if (av.length) html += '<div class="imp-avisos">' + av.map(function(a){ return '<div>• ' + esc(a) + '</div>'; }).join('') + '</div>';
+  el.innerHTML = html;
+  el.querySelectorAll('select[data-atv]').forEach(function(s){ s.onchange = function(){ im.escolhas[s.dataset.atv] = s.value; renderPrevImportacao(); }; });
+}
+function abrirImportacao(){
+  if (!podeEditar()) return;
+  S.imp = null;
+  abrirG({ titulo:'Importar planilha de processos',
+    corpo:'<p class="modal-note" style="margin-top:0">Envie a exportação do sistema (requisição de pessoal e/ou movimentação, .xlsx). Processos novos são criados e os existentes são atualizados pelo número do processo. Gestor, área, origem do candidato e observações preenchidos aqui no site nunca são sobrescritos.</p>' +
+      '<label class="campo full"><span>Arquivo(s) .xlsx</span><input id="imp-arq" type="file" multiple accept=".xlsx,.xls"></label><div id="imp-prev" style="margin-top:14px"></div>',
+    textoSalvar:'Importar', aoSalvar:async function(){
+      if (!S.imp || !S.imp.linhas.length) gErro('Escolha um arquivo com processos reconhecidos.');
+      var res = S.imp.linhas.map(resolverLinha);
+      var novas = Object.keys(S.imp.escolhas).filter(function(a){ return !S.ativEtapa[a]; }).map(function(a){ return { atividade:a, etapa:S.imp.escolhas[a] }; });
+      if (novas.length) {
+        await consulta(function(){ return sb.from('atividade_etapa').upsert(novas); });
+        novas.forEach(function(n){ S.ativEtapa[n.atividade] = n.etapa; });
+      }
+      var linhas = res.map(function(o){ return { processo:o.processo, tipo_processo:o.tipo_processo, abertura:o.abertura, status:o.status, etapa:o.etapa || null,
+        atividade:o.atividade, quantidade:o.quantidade, cargo:o.cargo, cargo_origem:o.cargo_origem, filial_codigo:o.filial_codigo, orcado:o.orcado, vigencia:o.vigencia, encerramento:o.encerramento }; });
+      var r = await consulta(function(){ return sb.rpc('importar_processos', { p_linhas: linhas, p_arquivos: S.imp.nomes.join(', ') }); });
+      await recarregarVagas(); montarFiltros(); render();
+      toast('Importação concluída: ' + r.novas + ' nova(s), ' + r.atualizadas + ' atualizada(s), ' + r.iguais + ' sem alteração.');
+    } });
+  document.getElementById('imp-arq').addEventListener('change', async function(){
+    var files = [].slice.call(this.files); if (!files.length) return;
+    if (typeof XLSX === 'undefined') { toast('O leitor de planilhas ainda está carregando. Tente de novo em instantes.', true); return; }
+    try { var r = await lerPlanilhas(files); S.imp = { linhas:r.linhas, ignoradas:r.ignoradas, nomes:r.nomes, escolhas:{} }; }
+    catch (e) { console.error(e); S.imp = null; document.getElementById('imp-prev').innerHTML = '<div class="aviso-alerta">Não foi possível ler o arquivo: ' + esc(e.message || e) + '</div>'; return; }
+    renderPrevImportacao();
+  });
+}
+
 /* ================== gráfico mensal do painel ================== */
 S.gMes = 'movimento';
 var NOMES_MES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -2460,10 +2628,27 @@ function renderConfig(){
     }).join('') +
     (adm ? '<div class="cfg-acoes"><button class="btn btn-primary" id="cfg-salvar">Salvar prazos</button></div>' : '<p class="modal-note">Somente administradores alteram estes prazos.</p>') +
     '<p class="modal-note" style="margin-top:14px">Novos alertas (ex.: e-mails automáticos) entram aqui conforme forem mapeados com o RH.</p></div>' +
-    '<div><div class="card" id="cat-origens" style="margin-bottom:16px"></div><div class="card" id="cat-motivos"></div></div></div>';
+    '<div><div class="card" id="cat-origens" style="margin-bottom:16px"></div><div class="card" id="cat-motivos" style="margin-bottom:16px"></div><div class="card" id="cfg-atv"></div></div></div>';
+  renderCfgAtividades();
   if (adm) document.getElementById('cfg-salvar').onclick = salvarConfig;
   renderCatalogoCfg('origens', 'cat-origens', 'Origem do candidato', 'Fontes de recrutamento usadas ao encerrar uma vaga.');
   renderCatalogoCfg('motivos_cancelamento', 'cat-motivos', 'Motivos de cancelamento', 'Opções ao cancelar uma vaga.');
+}
+function renderCfgAtividades(){
+  var adm = S.nivel === 'admin', el = document.getElementById('cfg-atv'); if (!el) return;
+  var nomes = Object.keys(S.ativEtapa).sort();
+  el.innerHTML = '<h2>Atividades do processo → etapa</h2><p class="c-sub">Na importação da planilha, a atividade atual do workflow define a etapa da vaga no funil.</p>' +
+    (nomes.length ? nomes.map(function(a){
+      return '<div class="cfg-linha" style="grid-template-columns:1fr 170px"><div class="t" style="word-break:break-all;font-size:.76rem">' + esc(a) + '</div><select class="sel-mini" data-atv-cfg="' + esc(a) + '"' + (adm ? '' : ' disabled') + '>' +
+        ETAPAS.slice(0, 6).map(function(e){ return '<option value="' + e[0] + '"' + (S.ativEtapa[a] === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join('') + '</select></div>';
+    }).join('') : '<div class="vazio">Ainda nenhuma atividade. Elas aparecem na primeira importação.</div>');
+  if (adm) el.onchange = async function(ev){
+    var sel = ev.target.closest('select[data-atv-cfg]'); if (!sel) return;
+    try {
+      await consulta(function(){ return sb.from('atividade_etapa').upsert({ atividade: sel.dataset.atvCfg, etapa: sel.value }); });
+      S.ativEtapa[sel.dataset.atvCfg] = sel.value; toast('Etapa salva. Vale a partir da próxima importação.');
+    } catch (e) { toast('Não foi possível salvar: ' + (e.message || e), true); }
+  };
 }
 async function salvarConfig(){
   var bt = document.getElementById('cfg-salvar'), v = {};
