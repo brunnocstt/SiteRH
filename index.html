@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://iueakatarwkvaoomhhah.supabase.co; img-src 'self' data: blob: https://iueakatarwkvaoomhhah.supabase.co; frame-ancestors 'none'; upgrade-insecure-requests;">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>RH · Portal Estratégia de Negócio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<style>
+/* ---------- tokens (design-tokens.md) ---------- */
+:root{
+  --canvas:#FFFFFF; --surface:#FFFFFF; --surface-2:#F1F5F9;
+  --ink:#0F172A; --ink-soft:#334155; --muted:#64748B; --muted-2:#94A3B8;
+  --line:#E2E8F0; --line-soft:#F1F5F9;
+  --accent:#1955FF; --accent-hover:#123FCB; --accent-ink:#FFFFFF;
+  --accent-soft:#EFF6FF; --accent-tint-10:#1955FF10;
+  --good:#059669; --good-soft:#ECFDF5;
+  --warn:#D97706; --warn-soft:#FFFBEB;
+  --neutral-status:#64748B; --neutral-status-soft:#F1F5F9;
+  --sidebar-bg:#0A0A0B; --sidebar-hover:#18181B;
+  --sidebar-text:#71717A; --sidebar-text-hover:#D4D4D8;
+  --sidebar-active-tint:rgba(25,85,255,.14); --sidebar-line:rgba(255,255,255,.07);
+  --sidebar-popup-bg:#18181B; --sidebar-popup-border:rgba(255,255,255,.08);
+  --badge-red:#EF4444;
+  --shadow-card: 0 1px 2px rgba(15,23,42,.04), 0 10px 24px -16px rgba(15,23,42,.18);
+  --shadow-lift: 0 6px 14px rgba(15,23,42,.06), 0 22px 40px -18px rgba(15,23,42,.24);
+  --font-body:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --r-btn:18px; --r-input:16px; --r-card:28px; --r-login:44px;
+  --bad:#DC2626; --bad-soft:#FEF2F2;
+}
+:root{ color-scheme: light; }
+
+*,*::before,*::after{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{ background:var(--canvas); color:var(--ink); font-family:var(--font-body); font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+h1,h2,h3,p{ margin:0; }
+button, input, select, textarea{ font-family:inherit; color:inherit; }
+a{ color:inherit; }
+svg{ display:block; }
+::selection{ background:var(--accent-soft); color:var(--ink); }
+*:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+@media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+[hidden]{ display:none !important; }
+
+/* ---------- boot / sem acesso (auth-integration.md) ---------- */
+.login-shell{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:var(--surface-2); z-index:1000; padding:20px; }
+.boot-spinner{ width:32px; height:32px; border-radius:50%; border:3px solid var(--line-soft); border-top-color:var(--accent); animation:boot-spin .7s linear infinite; }
+@keyframes boot-spin{ to{ transform:rotate(360deg); } }
+.aviso-card{ background:var(--surface); border-radius:var(--r-login); box-shadow:var(--shadow-lift); padding:40px 36px; max-width:420px; width:100%; text-align:center; }
+.aviso-card .logo-mark{ width:160px; height:auto; margin:0 auto 26px; color:var(--ink); }
+.aviso-card h1{ font-size:1.2rem; font-weight:800; margin-bottom:8px; }
+.aviso-card p{ color:var(--muted); font-size:.9rem; margin-bottom:24px; }
+
+/* ---------- sidebar (sidebar.md) ---------- */
+:root{ --sidebar-w: 240px; --sidebar-w-min: 56px; }
+.sidebar{ width:var(--sidebar-w); background:#0A0A0B; display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:200; overflow:hidden; transition:width .24s cubic-bezier(.4,0,.2,1); flex-shrink:0; }
+body.menu-fechado .sidebar{ width:var(--sidebar-w-min); }
+.s-logo{ display:flex; align-items:center; height:64px; flex-shrink:0; border-bottom:1px solid rgba(255,255,255,.07); }
+.btn-toggle-menu{ width:28px; height:28px; margin-left:14px; flex-shrink:0; border-radius:12px; border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#A1A1AA; transition:background .15s, color .15s; }
+.btn-toggle-menu:hover{ background:#18181B; color:#fff; }
+.logo-full-wrap{ margin-left:14px; padding-right:14px; flex:1; min-width:0; display:flex; align-items:center; opacity:0; animation:sbFadeIn .22s ease .08s forwards; overflow:hidden; color:#fff; }
+.logo-full-wrap svg{ width:160px; max-width:100%; height:auto; }
+body.menu-fechado .logo-full-wrap{ display:none !important; }
+@keyframes sbFadeIn{ to{ opacity:1; } }
+.s-nav{ flex:1; padding:12px 0; overflow-y:auto; overflow-x:hidden; }
+.s-link{ display:block; position:relative; width:100%; height:40px; padding-left:52px; padding-right:10px; border:none; border-radius:14px; cursor:pointer; background:transparent; color:#71717A; font-size:13px; font-weight:500; text-align:left; text-decoration:none; line-height:40px; white-space:nowrap; overflow:hidden; margin-bottom:2px; transition:background .15s, color .15s; }
+.s-link:hover{ background:#18181B; color:#D4D4D8; }
+.s-link.active{ background:rgba(25,85,255,.14); color:#fff; }
+.s-link.active::before{ content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:22px; border-radius:0 4px 4px 0; background:#1955FF; }
+.s-link .ico{ position:absolute; left:14px; top:50%; transform:translateY(-50%); width:28px; height:28px; display:flex; align-items:center; justify-content:center; }
+.s-link .ico svg{ stroke:currentColor !important; }
+.s-link.active .ico svg{ stroke:#1955FF !important; }
+.s-link .s-label{ opacity:0; animation:sbFadeIn .22s ease .08s forwards; }
+body.menu-fechado .s-link .s-label{ display:none; }
+.s-foot{ padding:8px 0; border-top:1px solid rgba(255,255,255,.06); flex-shrink:0; }
+.s-user-btn{ display:block; width:100%; height:44px; padding-left:52px; padding-right:10px; border:none; border-radius:14px; cursor:pointer; background:transparent; color:#71717A; font-size:12px; font-weight:500; text-align:left; line-height:44px; white-space:nowrap; overflow:hidden; position:relative; transition:background .15s, color .15s; }
+.s-user-btn:hover{ background:#18181B; color:#D4D4D8; }
+.s-user-avatar{ position:absolute; left:14px; top:50%; transform:translateY(-50%); width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; line-height:1; overflow:hidden; }
+.s-user-avatar img, .mobile-avatar-btn img{ width:100%; height:100%; object-fit:cover; }
+.s-user-name{ opacity:0; animation:sbFadeIn .22s ease .08s forwards; }
+body.menu-fechado .s-user-name{ display:none; }
+.s-user-dropdown{ position:fixed; left:8px; bottom:60px; background:#18181B; border:1px solid rgba(255,255,255,.08); border-radius:20px; min-width:200px; box-shadow:0 16px 40px rgba(0,0,0,.4); padding:6px; z-index:500; display:none; }
+.s-user-dropdown.open{ display:block; }
+.s-user-dd-item{ width:100%; display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:14px; border:none; background:transparent; cursor:pointer; color:#D4D4D8; font-size:13px; font-weight:500; text-align:left; transition:background .15s; }
+.s-user-dd-item:hover{ background:rgba(255,255,255,.07); }
+.s-user-dd-item.danger{ color:#FCA5A5; }
+.s-user-dd-item.danger:hover{ background:rgba(220,38,38,.15); color:#fff; }
+.s-user-dd-sep{ height:1px; background:rgba(255,255,255,.08); margin:4px 0; }
+.main{ flex:1; margin-left:var(--sidebar-w-min); min-height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+/* mobile */
+.mobile-header{ display:none; position:fixed; top:0; left:0; right:0; height:52px; z-index:200; align-items:center; justify-content:space-between; padding:0 16px; background:var(--surface); border-bottom:1px solid var(--line); }
+.mobile-header .logo-mark{ width:130px; height:auto; color:var(--ink); }
+.mobile-avatar-btn{ width:36px; height:36px; border-radius:50%; border:none; background:var(--accent); color:#fff; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; line-height:1; overflow:hidden; padding:0; }
+.mobile-bottom-nav{ display:none; position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #F1F5F9; box-shadow:0 -2px 12px rgba(0,0,0,.05); z-index:200; flex-direction:column; }
+.mobile-bottom-nav-row{ display:flex; height:64px; }
+.mobile-bottom-nav-row .s-link{ flex:1; min-width:0; height:100%; display:flex !important; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0 !important; margin:0 !important; background:transparent; color:#94A3B8; border-radius:0; line-height:normal; font-size:10px; font-weight:700; position:relative; }
+.mobile-bottom-nav-row .s-link::before{ display:none !important; }
+.mobile-bottom-nav-row .s-link .ico{ position:static !important; transform:none !important; width:24px; height:24px; }
+.mobile-bottom-nav-row .s-link .s-label{ display:block !important; opacity:1 !important; animation:none !important; font-size:10px; font-weight:700; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 2px; }
+.mobile-bottom-nav-row .s-link.active{ background:transparent; color:#1955FF; }
+.mobile-nav-safe{ height:max(10px, env(safe-area-inset-bottom)); flex-shrink:0; }
+@media (max-width: 767px), (max-height: 768px) and (orientation: portrait){
+  .sidebar{ display:none !important; }
+  .main{ margin-left:0 !important; padding-top:52px; padding-bottom:74px; overflow-x:hidden; }
+  .mobile-header{ display:flex !important; }
+  .mobile-bottom-nav{ display:flex; }
+  .s-user-dropdown{ left:auto; bottom:auto; top:58px; right:14px; max-width:calc(100vw - 28px); }
+}
+
+/* ---------- conteúdo ---------- */
+.page{ padding:28px 32px 48px; max-width:1320px; width:100%; margin:0 auto; }
+@media (max-width:767px){ .page{ padding:20px 16px 32px; } }
+.page-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+.page-head h1{ font-size:1.5rem; font-weight:800; letter-spacing:-.01em; }
+.page-head p{ color:var(--muted); font-size:.88rem; margin-top:2px; }
+.head-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; cursor:pointer; border-radius:var(--r-btn); padding:10px 18px; font-size:.86rem; font-weight:700; transition:background .15s, color .15s, box-shadow .15s; white-space:nowrap; }
+.btn-primary{ background:var(--accent); color:var(--accent-ink); }
+.btn-primary:hover{ background:var(--accent-hover); }
+.btn-ghost{ background:var(--surface-2); color:var(--ink-soft); }
+.btn-ghost:hover{ background:var(--line); color:var(--ink); }
+.btn-danger{ background:var(--bad-soft); color:var(--bad); }
+.btn-danger:hover{ background:#FEE2E2; }
+.btn:disabled{ opacity:.55; cursor:default; }
+.btn svg{ width:16px; height:16px; }
+
+.filtros{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; align-items:center; }
+.filtros select, .filtros input, .campo input, .campo select, .campo textarea{
+  border:1px solid var(--line); background:var(--surface); border-radius:14px; padding:9px 12px; font-size:.86rem; min-height:40px; outline:none; transition:border-color .15s, box-shadow .15s;
+}
+.filtros select:focus, .filtros input:focus, .campo input:focus, .campo select:focus, .campo textarea:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-tint-10); }
+.filtros .busca{ flex:1 1 220px; min-width:180px; }
+.filtros label{ font-size:.76rem; color:var(--muted); font-weight:600; display:flex; align-items:center; gap:6px; }
+@media (max-width:767px){
+  .filtros select{ flex:1 1 calc(50% - 5px); min-width:0; }
+  .filtros label{ width:100%; }
+  .filtros label input{ flex:1 1 0; min-width:0; }
+}
+.link-limpar{ background:none; border:none; color:var(--accent); font-weight:700; font-size:.82rem; cursor:pointer; padding:6px; }
+
+.kpis{ display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:14px; margin-bottom:22px; }
+.kpi{ background:var(--surface); border:1px solid var(--line); border-radius:24px; padding:18px 20px; box-shadow:var(--shadow-card); text-align:left; cursor:pointer; transition:box-shadow .15s, transform .15s; }
+.kpi:hover{ box-shadow:var(--shadow-lift); }
+.kpi .k-label{ font-size:.76rem; color:var(--muted); font-weight:600; display:flex; align-items:center; gap:6px; }
+.kpi .k-valor{ font-size:2rem; font-weight:800; letter-spacing:-.02em; line-height:1.15; margin-top:6px; font-variant-numeric:tabular-nums; }
+.kpi .k-sub{ font-size:.74rem; color:var(--muted-2); margin-top:2px; }
+.kpi.alerta .k-valor{ color:var(--bad); }
+.kpi.atencao .k-valor{ color:var(--warn); }
+.dot{ width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0; }
+
+.grid-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(360px,1fr)); gap:16px; }
+@media (max-width:767px){ .grid-cards{ grid-template-columns:1fr; } }
+.card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r-card); box-shadow:var(--shadow-card); padding:22px 24px; min-width:0; }
+.card h2{ font-size:.95rem; font-weight:800; margin-bottom:2px; }
+.card .c-sub{ font-size:.76rem; color:var(--muted); margin-bottom:16px; }
+.card.largo{ grid-column:1 / -1; }
+
+/* barras horizontais (uma série, uma cor) */
+.barras{ display:flex; flex-direction:column; gap:10px; }
+.barra{ display:grid; grid-template-columns:minmax(90px, 38%) 1fr 44px; align-items:center; gap:10px; font-size:.82rem; cursor:pointer; border-radius:10px; padding:2px 4px; margin:0 -4px; }
+.barra:hover{ background:var(--surface-2); }
+.barra .b-nome{ color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.barra .b-trilho{ height:12px; background:transparent; position:relative; }
+.barra .b-fill{ height:100%; background:var(--accent); border-radius:0 4px 4px 0; min-width:2px; }
+.barra .b-valor{ text-align:right; font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink); }
+.vazio{ color:var(--muted-2); font-size:.84rem; padding:12px 0; }
+
+/* tabela */
+.tabela-wrap{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r-card); box-shadow:var(--shadow-card); overflow:hidden; }
+.tabela-scroll{ overflow-x:auto; }
+table{ width:100%; border-collapse:collapse; font-size:.84rem; }
+th{ text-align:left; font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700; padding:14px 16px; border-bottom:1px solid var(--line); white-space:nowrap; background:var(--surface); }
+td{ padding:12px 16px; border-bottom:1px solid var(--line-soft); vertical-align:middle; }
+tbody tr{ cursor:pointer; transition:background .12s; }
+tbody tr:hover{ background:var(--surface-2); }
+tbody tr:last-child td{ border-bottom:none; }
+td.num{ text-align:right; font-variant-numeric:tabular-nums; }
+.cod{ color:var(--muted); font-weight:600; font-variant-numeric:tabular-nums; }
+
+.pill{ display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px; font-size:.74rem; font-weight:700; white-space:nowrap; background:var(--surface-2); color:var(--ink-soft); }
+.pill.ok{ background:var(--good-soft); color:var(--good); }
+.pill.warn{ background:var(--warn-soft); color:var(--warn); }
+.pill.bad{ background:var(--bad-soft); color:var(--bad); }
+.pill.azul{ background:var(--accent-soft); color:var(--accent); }
+.pill svg{ width:12px; height:12px; }
+
+/* ---------- modal (modal-pattern.md) ---------- */
+.modal-overlay{ position:fixed; inset:0; background:rgba(15,10,8,.45); z-index:300; display:flex; align-items:center; justify-content:center; padding:20px; }
+.modal-card{ width:100%; max-width:420px; max-height:100%; display:flex; flex-direction:column; background:var(--surface); border-radius:32px; box-shadow:var(--shadow-lift); overflow:hidden; }
+.modal-card.largo{ max-width:640px; }
+.modal-card-scroll{ flex:1 1 auto; min-height:0; overflow-y:auto; margin:24px 0; padding:0 24px; scrollbar-width:thin; scrollbar-color:var(--line-soft) transparent; }
+.modal-card-scroll::-webkit-scrollbar{ width:9px; }
+.modal-card-scroll::-webkit-scrollbar-track{ background:transparent; }
+.modal-card-scroll::-webkit-scrollbar-thumb{ background-color:var(--line-soft); border-radius:999px; border:2.5px solid var(--surface); background-clip:padding-box; }
+.modal-card-scroll::-webkit-scrollbar-thumb:hover{ background-color:var(--muted-2); }
+.modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; gap:12px; }
+.modal-head h2{ font-size:1.1rem; font-weight:800; color:var(--ink); }
+.modal-close{ all:unset; box-sizing:border-box; width:30px; height:30px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); flex-shrink:0; }
+.modal-close:hover{ background:var(--surface-2); color:var(--ink); }
+.modal-note{ font-size:.76rem; color:var(--muted-2); line-height:1.5; margin:4px 0 18px; }
+.modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:22px; flex-wrap:wrap; }
+.modal-actions .btn{ width:auto; padding:11px 20px; }
+.modal-actions .esq{ margin-right:auto; }
+
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.form-grid .full{ grid-column:1 / -1; }
+@media (max-width:560px){ .form-grid{ grid-template-columns:1fr; } }
+.campo{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+.campo > span{ font-size:.76rem; font-weight:700; color:var(--ink-soft); }
+.campo textarea{ resize:vertical; min-height:72px; }
+.erro-form{ background:var(--bad-soft); color:var(--bad); font-size:.82rem; font-weight:600; padding:10px 14px; border-radius:14px; margin-top:14px; }
+
+.det-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 18px; margin-bottom:20px; }
+@media (max-width:560px){ .det-grid{ grid-template-columns:1fr; } }
+.det-item .d-l{ font-size:.72rem; color:var(--muted); font-weight:600; }
+.det-item .d-v{ font-size:.9rem; font-weight:600; }
+.sla-box{ display:flex; align-items:center; gap:14px; background:var(--surface-2); border-radius:20px; padding:14px 16px; margin-bottom:20px; }
+.sla-box .sla-num{ font-size:1.6rem; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
+.sla-box .sla-txt{ font-size:.8rem; color:var(--muted); }
+.sec-tit{ font-size:.8rem; font-weight:800; color:var(--ink); margin:4px 0 12px; text-transform:uppercase; letter-spacing:.04em; }
+.timeline{ list-style:none; margin:0; padding:0; position:relative; }
+.timeline li{ position:relative; padding:0 0 16px 26px; }
+.timeline li::before{ content:''; position:absolute; left:6px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+.timeline li::after{ content:''; position:absolute; left:10px; top:18px; bottom:0; width:2px; background:var(--line); }
+.timeline li:last-child::after{ display:none; }
+.timeline .t-tit{ font-size:.86rem; font-weight:700; }
+.timeline .t-sub{ font-size:.76rem; color:var(--muted); }
+
+.toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:12px 20px; border-radius:18px; font-size:.86rem; font-weight:600; z-index:900; box-shadow:var(--shadow-lift); max-width:calc(100vw - 32px); }
+.toast.erro{ background:var(--bad); }
+@media (max-width:767px){ .toast{ bottom:90px; } }
+
+/* impressão / PDF */
+@media print{
+  .sidebar, .mobile-header, .mobile-bottom-nav, .head-actions, .filtros, .s-user-dropdown, .toast{ display:none !important; }
+  .main{ margin:0 !important; padding:0 !important; }
+  .page{ padding:0; max-width:none; }
+  .card, .kpi, .tabela-wrap{ box-shadow:none; break-inside:avoid; }
+  body{ font-size:12px; }
+}
+</style>
+</head>
+<body class="menu-fechado">
+
+<!-- shared icon defs -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-logo-ivecodeva" viewBox="0 0 183 15" fill="currentColor">
+      <path d="M0.255224 0.551577H3.85268C4.00215 0.566281 4.07688 0.650527 4.07688 0.804314C4.07688 5.28925 4.07688 9.76194 4.07688 14.2224C4.07688 14.277 4.05502 14.3293 4.0161 14.3679C3.97718 14.4065 3.9244 14.4282 3.86936 14.4282L0.175548 14.4292C0.161522 14.4292 0.147684 14.4263 0.134922 14.4208C0.122159 14.4152 0.110752 14.4071 0.101431 14.397C0.0364746 14.326 0.00044619 14.2334 0.00044619 14.1372V0.84659C-0.00696552 0.653591 0.0779603 0.555253 0.255224 0.551577Z"/>
+      <path d="M6.88079 0.551577H10.9785C13.0977 4.13769 15.2285 7.74402 17.3711 11.3706C17.4131 11.441 17.4598 11.498 17.511 11.5415C17.5188 11.5479 17.5279 11.5526 17.5377 11.5552C17.5474 11.5579 17.5576 11.5584 17.5676 11.5569C17.5776 11.5553 17.5871 11.5516 17.5956 11.5462C17.604 11.5407 17.6112 11.5334 17.6166 11.525C19.9353 7.90455 22.2456 4.29178 24.5475 0.686676C24.5877 0.622956 24.6667 0.577923 24.7847 0.551577H27.78L28.964 0.5865C28.9998 0.587726 29.018 0.606107 29.0186 0.641643C29.0236 0.891011 28.96 1.11924 28.8278 1.32633C26.4264 5.08706 24.029 8.85025 21.6356 12.6159C21.3102 13.1281 21.0646 13.4718 20.8991 13.647C19.2361 15.4079 15.9277 15.4686 14.236 13.7197C14.0062 13.4825 13.6931 13.0249 13.2966 12.3466C11.1416 8.66184 8.98232 4.97984 6.81872 1.3006C6.70445 1.10637 6.6501 0.890398 6.65566 0.652672C6.65628 0.618973 6.67326 0.598142 6.70662 0.590177L6.88079 0.551577Z"/>
+      <path d="M34.7689 0.551577H46.8352C46.9859 0.565056 47.0615 0.65696 47.0621 0.82729C47.0665 1.73102 47.0658 2.63505 47.0603 3.53939C47.0584 3.81939 46.9207 3.95909 46.6471 3.95848C42.6021 3.95357 38.5569 3.95143 34.5113 3.95204C34.4798 3.95204 34.4641 3.96767 34.4641 3.99891V10.8219C34.4641 10.8767 34.486 10.9293 34.5251 10.9681C34.5642 11.0069 34.6173 11.0287 34.6725 11.0287H46.8787C46.9278 11.0287 46.975 11.0481 47.0097 11.0825C47.0445 11.117 47.064 11.1637 47.064 11.2125V14.1985C47.064 14.351 46.9871 14.4273 46.8333 14.4273C43.2025 14.4301 39.5615 14.3814 35.9316 14.4494C35.2608 14.4622 34.7717 14.4481 34.4641 14.4071C32.7816 14.1856 30.9936 13.1076 30.5109 11.4119C30.4244 11.1086 30.3824 10.635 30.3849 9.99109C30.391 8.14564 30.3917 6.30143 30.3867 4.45844C30.3802 2.2031 32.6288 0.691271 34.7689 0.551577Z"/>
+      <path d="M55.0888 0.551565H67.0392C67.4404 0.543294 67.4497 0.926536 67.4506 1.21787C67.4518 1.93779 67.4487 2.65771 67.4413 3.37763C67.4395 3.53815 67.4083 3.69194 67.3478 3.83899C67.3358 3.86679 67.3137 3.88912 67.2857 3.90148C67.2097 3.93457 67.1399 3.95111 67.0763 3.95111C63.0159 3.95173 58.9701 3.95203 54.9387 3.95203C54.9145 3.95203 54.8905 3.95676 54.8682 3.96595C54.8458 3.97514 54.8255 3.98862 54.8084 4.0056C54.7912 4.02258 54.7776 4.04274 54.7684 4.06493C54.7591 4.08712 54.7543 4.1109 54.7543 4.13492V10.8219C54.7543 10.8765 54.7763 10.9289 54.8154 10.9675C54.8545 11.0061 54.9075 11.0278 54.9628 11.0278L67.2273 11.0296C67.2388 11.0296 67.2502 11.0323 67.2605 11.0376C67.2708 11.0429 67.2797 11.0505 67.2866 11.0599C67.3824 11.1874 67.4318 11.3301 67.4349 11.4882C67.4503 12.2921 67.4515 13.0962 67.4386 13.9007C67.4361 14.0508 67.4034 14.1926 67.3404 14.3262C67.3261 14.3556 67.3039 14.3755 67.2736 14.3859C67.194 14.4135 67.1128 14.4273 67.03 14.4273C63.4298 14.4301 59.8212 14.385 56.2219 14.4503C55.5604 14.4619 55.0712 14.446 54.7543 14.4025C52.8718 14.1442 50.9021 12.7988 50.6992 10.7759C50.6745 10.5278 50.664 10.1142 50.6677 9.53523C50.6782 7.88095 50.6822 6.22667 50.6798 4.57239C50.677 2.2472 52.9376 0.681151 55.0888 0.551565Z"/>
+      <path d="M74.9784 0.551577H84.8481C85.1056 0.575472 85.3644 0.585888 85.6244 0.582824C85.9407 0.579148 86.361 0.687289 86.8853 0.907247C88.3983 1.54231 89.5369 2.65435 89.6823 4.34264V10.7125C89.5903 11.5452 89.2645 12.2547 88.7049 12.841C87.7025 13.8918 86.4456 14.4166 84.9342 14.4154C80.2723 14.4111 77.1454 14.4194 75.5538 14.4402C73.6453 14.465 71.8674 13.6333 70.9502 11.9404C70.6481 11.3844 70.5981 10.7796 70.5981 10.0664C70.5969 8.20446 70.5981 6.34248 70.6018 4.48049C70.6037 3.42911 71.1855 2.3768 72.0045 1.72612C72.8723 1.03622 73.8636 0.644706 74.9784 0.551577ZM74.6885 10.8219C74.6894 11.0131 74.8487 11.0351 74.9979 11.0342C78.4962 11.0305 81.993 11.0284 85.4882 11.0278C85.4949 11.0278 85.5012 11.0251 85.5059 11.0202C85.5106 11.0154 85.5133 11.0089 85.5133 11.002V4.0899C85.5133 4.05334 85.4986 4.01827 85.4726 3.99242C85.4465 3.96657 85.4111 3.95204 85.3743 3.95204H74.6977C74.6908 3.95204 74.6842 3.95475 74.6794 3.95958C74.6745 3.96441 74.6718 3.97095 74.6718 3.97778C74.6724 6.25762 74.678 8.539 74.6885 10.8219Z"/>
+      <path d="M46.8024 5.89153H36.6206C36.5157 5.89153 36.4307 5.97588 36.4307 6.07994V8.91979C36.4307 9.02384 36.5157 9.10819 36.6206 9.10819H46.8024C46.9073 9.10819 46.9923 9.02384 46.9923 8.91979V6.07994C46.9923 5.97588 46.9073 5.89153 46.8024 5.89153Z"/>
+      <path d="M177.201 12.4415C177.18 12.405 177.151 12.3746 177.115 12.3534C177.079 12.3323 177.038 12.3211 176.996 12.3211C173.663 12.3247 170.333 12.3257 167.007 12.3238C166.872 12.3238 166.765 12.4093 166.684 12.5802C166.54 12.8866 166.263 13.4083 165.853 14.1454C165.675 14.467 165.497 14.5222 165.117 14.5249C164.133 14.5323 163.149 14.5357 162.166 14.535C161.842 14.535 161.138 14.5562 161.348 14.0011C161.396 13.8755 161.478 13.711 161.596 13.5076C163.638 9.99435 165.672 6.47686 167.699 2.95508C168.108 2.24374 168.55 1.64575 169.024 1.16111C170.01 0.151076 171.555 -0.183456 172.934 0.0931768C174.353 0.377162 175.305 1.31183 176.05 2.59298C178.246 6.36841 180.44 10.1451 182.632 13.923C182.656 13.9665 182.686 14.0596 182.72 14.2024C182.726 14.2305 182.723 14.2575 182.709 14.2832C182.631 14.4272 182.521 14.501 182.379 14.5047C181.2 14.5366 180.021 14.5485 178.842 14.5406C178.629 14.5387 178.317 14.5112 178.211 14.3108C177.868 13.6632 177.531 13.0401 177.201 12.4415ZM175.147 8.72117C174.185 6.98785 173.221 5.25637 172.272 3.5157C172.192 3.37049 172.103 3.23999 172.005 3.12419C172.001 3.11913 171.995 3.1152 171.989 3.11275C171.983 3.1103 171.976 3.1094 171.97 3.11013C171.963 3.11085 171.957 3.11318 171.951 3.11691C171.945 3.12064 171.941 3.12566 171.937 3.13154L168.68 9.02629C168.675 9.03479 168.673 9.04432 168.673 9.05398C168.673 9.06363 168.676 9.07308 168.681 9.0814C168.686 9.08972 168.693 9.09663 168.701 9.10147C168.71 9.10631 168.719 9.1089 168.729 9.10901L175.208 9.10993C175.222 9.10985 175.235 9.10638 175.247 9.09982C175.259 9.09326 175.27 9.08381 175.277 9.07233C175.285 9.06085 175.289 9.0477 175.291 9.03405C175.292 9.0204 175.289 9.00668 175.284 8.99413C175.246 8.90774 175.2 8.81675 175.147 8.72117Z"/>
+      <path d="M121.313 10.8947C120.86 13.0223 119.214 14.2584 117.075 14.445C116.611 14.4854 116.147 14.5066 115.681 14.5084C111.543 14.5237 107.405 14.5323 103.266 14.5341C102.985 14.5341 102.484 14.5452 102.483 14.2088C102.48 9.95056 102.474 5.69231 102.467 1.43407C102.467 1.16204 102.488 0.916346 102.532 0.697C102.539 0.658959 102.559 0.624646 102.59 0.599983C102.62 0.57532 102.658 0.561853 102.697 0.561901C107.238 0.560675 111.767 0.560368 116.283 0.560981C116.678 0.560981 117.071 0.588859 117.462 0.644614C119.343 0.912975 120.914 2.16104 121.309 4.03038C121.398 4.44701 121.445 4.86824 121.449 5.29406C121.463 6.63403 121.472 7.9743 121.476 9.31488C121.478 9.84732 121.423 10.3739 121.313 10.8947ZM106.764 11.0381H117.256C117.268 11.0381 117.28 11.0333 117.289 11.0246C117.297 11.016 117.302 11.0043 117.302 10.9921L117.301 4.06438C117.301 4.03708 117.29 4.0109 117.271 3.99159C117.251 3.97229 117.225 3.96145 117.198 3.96145H106.741C106.691 3.96145 106.644 3.98081 106.61 4.01528C106.575 4.04975 106.555 4.09651 106.555 4.14526V10.8313C106.555 10.8862 106.577 10.9387 106.616 10.9775C106.655 11.0163 106.708 11.0381 106.764 11.0381Z"/>
+      <path d="M127.864 10.9875C127.864 11.0009 127.869 11.0138 127.879 11.0233C127.888 11.0327 127.901 11.0381 127.915 11.0381C132.054 11.0368 136.183 11.039 140.302 11.0445C140.658 11.0445 140.652 11.3579 140.654 11.6125C140.658 12.2049 140.653 13.0627 140.641 14.1858C140.638 14.4266 140.434 14.5102 140.232 14.5121C136.659 14.5543 133.083 14.5286 129.508 14.5268C128.966 14.5268 128.425 14.4912 127.887 14.4202C125.913 14.1591 124.325 12.9212 123.887 10.9563C123.797 10.5565 123.765 9.983 123.77 9.61355C123.789 8.05117 123.792 6.48849 123.779 4.9255C123.773 4.14921 123.975 3.42623 124.384 2.75655C125.253 1.33479 126.866 0.568305 128.536 0.565548C132.519 0.558808 136.503 0.558196 140.487 0.563711C140.507 0.563719 140.527 0.570267 140.543 0.582367C140.56 0.594468 140.571 0.611467 140.577 0.630802C140.601 0.70984 140.616 0.801744 140.621 0.906515C140.676 1.96893 140.678 2.89563 140.625 3.68663C140.613 3.86186 140.506 3.94978 140.302 3.95039C136.199 3.95836 132.108 3.96264 128.027 3.96326C127.984 3.96326 127.942 3.9803 127.912 4.01063C127.881 4.04097 127.864 4.08211 127.864 4.12501V10.9875Z"/>
+      <path d="M153.957 14.99C153.124 14.99 152.259 14.997 151.516 14.6194C150.658 14.1835 150.063 13.4443 149.498 12.5573C147.095 8.78244 144.689 5.00915 142.281 1.23739C142.175 1.07073 142.124 0.88907 142.129 0.692394C142.13 0.676298 142.135 0.660649 142.144 0.647407C142.153 0.634165 142.166 0.623918 142.181 0.617952C142.26 0.586705 142.359 0.570161 142.479 0.568323C143.807 0.55178 145.152 0.550557 146.514 0.564649C146.567 0.565224 146.619 0.579118 146.664 0.605014C146.71 0.63091 146.748 0.667949 146.775 0.712614L153.249 11.345C153.259 11.3622 153.274 11.3763 153.292 11.3861C153.309 11.3959 153.329 11.4011 153.349 11.4011C153.369 11.4011 153.389 11.3959 153.407 11.3861C153.424 11.3763 153.439 11.3622 153.45 11.345L159.94 0.68688C159.966 0.64542 160.002 0.611187 160.044 0.587513C160.087 0.563838 160.135 0.551528 160.183 0.551781L164.363 0.570163C164.417 0.570322 164.468 0.590694 164.506 0.627095C164.545 0.663497 164.568 0.713169 164.571 0.76592C164.578 0.913886 164.523 1.06185 164.436 1.19879C162.141 4.79899 159.852 8.40318 157.569 12.0114C156.64 13.4791 155.791 14.7354 153.957 14.99Z"/>
+      <path d="M140.098 5.89145C140.195 5.89145 140.289 5.92979 140.357 5.99804C140.426 6.06629 140.465 6.15886 140.465 6.25539V8.69913C140.465 8.80808 140.42 8.91257 140.341 8.98962C140.262 9.06666 140.154 9.10994 140.042 9.10994H130.322C130.21 9.10994 130.102 9.06666 130.023 8.98962C129.944 8.91257 129.899 8.80808 129.899 8.69913V6.25539C129.899 6.15886 129.938 6.06629 130.007 5.99804C130.076 5.92979 130.169 5.89145 130.266 5.89145H140.098Z"/>
+    </symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-painel" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></symbol>
+    <symbol id="i-vagas" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
+    <symbol id="i-hub" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 19l-7-7 7-7M3 12h18"/></symbol>
+    <symbol id="i-sair" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-mais" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-excel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 12l6 6M15 12l-6 6"/></symbol>
+    <symbol id="i-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></symbol>
+    <symbol id="i-alerta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 16.5v.01"/><circle cx="12" cy="12" r="9"/></symbol>
+    <symbol id="i-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  </defs>
+</svg>
+
+<!-- telas de entrada -->
+<div id="boot-shell" class="login-shell"><div class="boot-spinner"></div></div>
+<div id="sem-acesso-shell" class="login-shell" hidden>
+  <div class="aviso-card">
+    <svg class="logo-mark" viewBox="0 0 183 15"><use href="#i-logo-ivecodeva"/></svg>
+    <h1 id="sem-acesso-tit">Você não tem acesso ao RH</h1>
+    <p id="sem-acesso-msg">Peça acesso a um administrador pelo Portal. Assim que for liberado, o app aparece na sua tela inicial.</p>
+    <button class="btn btn-primary" onclick="voltarAoHub()">Voltar ao Hub</button>
+  </div>
+</div>
+
+<!-- app -->
+<div id="app-shell" hidden>
+  <aside class="sidebar" id="sidebar">
+    <div class="s-logo">
+      <button class="btn-toggle-menu" id="menu-toggle" aria-label="Abrir ou fechar menu"><svg width="17" height="17"><use href="#i-menu"/></svg></button>
+      <div class="logo-full-wrap">
+        <svg class="logo-mark" viewBox="0 0 183 15"><use href="#i-logo-ivecodeva"/></svg>
+      </div>
+    </div>
+    <nav class="s-nav" id="s-nav">
+      <a class="s-link active" data-page="painel" href="#painel"><span class="ico"><svg width="17" height="17"><use href="#i-painel"/></svg></span><span class="s-label">Painel de vagas</span></a>
+      <a class="s-link" data-page="vagas" href="#vagas"><span class="ico"><svg width="17" height="17"><use href="#i-vagas"/></svg></span><span class="s-label">Vagas</span></a>
+    </nav>
+    <div class="s-foot">
+      <button class="s-user-btn" id="s-user-btn">
+        <span class="s-user-avatar" id="s-user-avatar-ico"></span>
+        <span class="s-user-name" id="s-user-name-lbl"></span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="s-user-dropdown" id="s-user-dropdown">
+    <button class="s-user-dd-item" onclick="voltarAoHub()"><svg width="16" height="16"><use href="#i-hub"/></svg>Voltar ao Hub</button>
+    <div class="s-user-dd-sep"></div>
+    <button class="s-user-dd-item danger" onclick="logout()"><svg width="16" height="16"><use href="#i-sair"/></svg>Sair</button>
+  </div>
+
+  <header class="mobile-header">
+    <svg class="logo-mark" viewBox="0 0 183 15"><use href="#i-logo-ivecodeva"/></svg>
+    <button class="mobile-avatar-btn" id="mobile-avatar-btn" aria-label="Menu do usuário"></button>
+  </header>
+
+  <main class="main">
+    <!-- ===== Painel ===== -->
+    <section class="page" id="page-painel">
+      <div class="page-head">
+        <div>
+          <h1>Painel de vagas</h1>
+          <p id="painel-sub">Recrutamento e Seleção</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost" onclick="exportarPdf('painel')"><svg><use href="#i-pdf"/></svg>PDF</button>
+        </div>
+      </div>
+      <div class="filtros" id="filtros-painel"></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="grid-cards">
+        <div class="card"><h2>Vagas abertas por filial</h2><p class="c-sub">Situação atual</p><div class="barras" id="g-filial"></div></div>
+        <div class="card"><h2>Gestores com mais vagas abertas</h2><p class="c-sub">Situação atual</p><div class="barras" id="g-gestor"></div></div>
+        <div class="card"><h2>Vagas abertas por etapa</h2><p class="c-sub">Onde o funil está parado</p><div class="barras" id="g-etapa"></div></div>
+        <div class="card"><h2>Tempo médio de fechamento por filial</h2><p class="c-sub">Dias, vagas encerradas no período</p><div class="barras" id="g-tempo-filial"></div></div>
+        <div class="card"><h2>Tempo médio de fechamento por cargo</h2><p class="c-sub">Dias, vagas encerradas no período</p><div class="barras" id="g-tempo-cargo"></div></div>
+        <div class="card"><h2>Fontes que mais contratam</h2><p class="c-sub">Origem do candidato aprovado, vagas encerradas no período</p><div class="barras" id="g-origem"></div></div>
+        <div class="card"><h2>Motivos de cancelamento</h2><p class="c-sub">Vagas canceladas no período</p><div class="barras" id="g-cancel"></div></div>
+        <div class="card largo"><h2>Vagas críticas</h2><p class="c-sub" id="criticas-sub">Abertas há mais dias</p><div id="t-criticas"></div></div>
+      </div>
+    </section>
+
+    <!-- ===== Vagas ===== -->
+    <section class="page" id="page-vagas" hidden>
+      <div class="page-head">
+        <div>
+          <h1>Vagas</h1>
+          <p id="vagas-sub"></p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost" onclick="exportarExcel()"><svg><use href="#i-excel"/></svg>Excel</button>
+          <button class="btn btn-ghost" onclick="exportarPdf('vagas')"><svg><use href="#i-pdf"/></svg>PDF</button>
+          <button class="btn btn-primary" id="btn-nova-vaga" hidden onclick="abrirFormVaga()"><svg><use href="#i-mais"/></svg>Nova vaga</button>
+        </div>
+      </div>
+      <div class="filtros" id="filtros-vagas"></div>
+      <div class="tabela-wrap"><div class="tabela-scroll" id="t-vagas"></div></div>
+    </section>
+  </main>
+
+  <nav class="mobile-bottom-nav">
+    <div class="mobile-bottom-nav-row" id="mobile-nav-row"></div>
+    <div class="mobile-nav-safe"></div>
+  </nav>
+</div>
+
+<!-- modal: detalhe da vaga -->
+<div class="modal-overlay" id="modal-detalhe" hidden>
+  <div class="modal-card largo">
+    <div class="modal-card-scroll">
+      <div class="modal-head">
+        <h2 id="det-titulo">Vaga</h2>
+        <button type="button" class="modal-close" data-fechar aria-label="Fechar"><svg width="18" height="18"><use href="#i-x"/></svg></button>
+      </div>
+      <div id="det-corpo"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-fechar>Fechar</button>
+        <button type="button" class="btn btn-primary" id="det-editar" hidden>Editar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- modal: criar / editar vaga -->
+<div class="modal-overlay" id="modal-form" hidden>
+  <div class="modal-card largo">
+    <div class="modal-card-scroll">
+      <div class="modal-head">
+        <h2 id="form-titulo">Nova vaga</h2>
+        <button type="button" class="modal-close" data-fechar aria-label="Fechar"><svg width="18" height="18"><use href="#i-x"/></svg></button>
+      </div>
+      <form id="form-vaga" novalidate>
+        <div class="form-grid">
+          <label class="campo full"><span>Cargo *</span><input name="cargo" required maxlength="120" list="lista-cargos" autocomplete="off"></label>
+          <label class="campo"><span>Filial *</span><select name="filial_id" required></select></label>
+          <label class="campo"><span>Área</span><input name="area" maxlength="80" list="lista-areas" autocomplete="off"></label>
+          <label class="campo"><span>Gestor solicitante</span><select name="gestor_id"></select></label>
+          <label class="campo"><span>Tipo</span>
+            <select name="tipo"><option value="substituicao">Substituição</option><option value="aumento_quadro">Aumento de quadro</option></select>
+          </label>
+          <label class="campo"><span>Data de abertura *</span><input type="date" name="data_abertura" required></label>
+          <label class="campo"><span>Quantidade de posições</span><input type="number" name="quantidade" min="1" max="99" value="1"></label>
+          <label class="campo full"><span>Etapa</span><select name="status"></select></label>
+          <label class="campo" data-se="encerrada"><span>Origem do aprovado</span><select name="origem_id"></select></label>
+          <label class="campo" data-se="encerrada"><span>Nome do aprovado</span><input name="candidato_aprovado" maxlength="120" autocomplete="off"></label>
+          <label class="campo full" data-se="cancelada"><span>Motivo do cancelamento *</span><select name="motivo_cancelamento_id"></select></label>
+          <label class="campo full"><span>Observações</span><textarea name="observacoes" maxlength="1000"></textarea></label>
+        </div>
+        <p class="modal-note">Guarde aqui só o necessário. Não registre CPF, telefone, salário ou dados de saúde de candidatos.</p>
+        <div class="erro-form" id="form-erro" hidden></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" data-fechar>Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="form-salvar">Salvar</button>
+        </div>
+      </form>
+      <datalist id="lista-cargos"></datalist>
+      <datalist id="lista-areas"></datalist>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ================== configuração ================== */
+var SUPABASE_URL = 'https://iueakatarwkvaoomhhah.supabase.co';
+var SUPABASE_ANON_KEY = 'COLE_AQUI_A_ANON_KEY_DO_PROJETO_PRINCIPAL';
+var HUB_URL = 'https://deva.albusdata.com.br';
+
+/* ================== sessão compartilhada (auth-integration.md) ================== */
+var DEVA_COOKIE_DOMAIN = '.albusdata.com.br';
+var DEVA_STORAGE_KEY = 'sb-deva-auth';
+function criarCookieStorage(domain){
+  var emLocalhost = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  var secure = (location.protocol === 'https:') ? '; Secure' : '';
+  var dominio = emLocalhost ? '' : ('; domain=' + domain);
+  function lerCookie(nome){
+    var partes = ('; ' + document.cookie).split('; ' + nome + '=');
+    if (partes.length < 2) return null;
+    return decodeURIComponent(partes.pop().split(';').shift());
+  }
+  return {
+    getItem: function(key){ return lerCookie(key); },
+    setItem: function(key, value){
+      document.cookie = key + '=' + encodeURIComponent(value) + dominio +
+        '; path=/; max-age=' + (60*60*24*30) + '; SameSite=Lax' + secure;
+    },
+    removeItem: function(key){
+      document.cookie = key + '=' + dominio + '; path=/; max-age=0; SameSite=Lax' + secure;
+    }
+  };
+}
+
+var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { storage: criarCookieStorage(DEVA_COOKIE_DOMAIN), storageKey: DEVA_STORAGE_KEY },
+  db: { schema: 'rh' }
+});
+
+function voltarAoHub(){ window.location.replace(HUB_URL); }
+async function logout(){
+  try { await sb.auth.signOut(); } catch(e) {}
+  voltarAoHub();
+}
+
+/* ================== telas ================== */
+var bootShell = document.getElementById('boot-shell');
+var semAcessoShell = document.getElementById('sem-acesso-shell');
+var appShell = document.getElementById('app-shell');
+function esconderTodasAsTelas(){ bootShell.hidden = true; semAcessoShell.hidden = true; appShell.hidden = true; }
+function mostrarSemAcesso(titulo, msg){
+  esconderTodasAsTelas();
+  if (titulo) document.getElementById('sem-acesso-tit').textContent = titulo;
+  if (msg) document.getElementById('sem-acesso-msg').textContent = msg;
+  semAcessoShell.hidden = false;
+}
+
+/* ================== estado ================== */
+var S = {
+  eu: null, nivel: null,
+  config: { sla_dias: 30, dias_critica: 60 },
+  vagas: [], filiais: [], gestores: [], origens: [], motivos: [],
+  mapFilial: {}, mapGestor: {}, mapOrigem: {}, mapMotivo: {},
+  pagina: 'painel',
+  fp: { filial:'', gestor:'', cargo:'', area:'', de:'', ate:'' },               // filtros do painel
+  fv: { busca:'', filial:'', gestor:'', status:'abertas', sla:'' }              // filtros da lista
+};
+
+var ETAPAS = [
+  ['solicitada','Solicitada'], ['divulgacao','Divulgação'], ['triagem','Triagem'], ['entrevistas','Entrevistas'],
+  ['aprovacao','Aprovação'], ['admissao','Admissão'], ['encerrada','Encerrada'], ['cancelada','Cancelada']
+];
+var NOME_ETAPA = {}; ETAPAS.forEach(function(e){ NOME_ETAPA[e[0]] = e[1]; });
+function estaAberta(v){ return v.status !== 'encerrada' && v.status !== 'cancelada'; }
+function podeEditar(){ return S.nivel === 'admin' || S.nivel === 'editor'; }
+
+/* ================== utilidades ================== */
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function hojeISO(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function diasEntre(a, b){ // datas 'AAAA-MM-DD'
+  var da = Date.UTC(+a.slice(0,4), +a.slice(5,7)-1, +a.slice(8,10));
+  var db = Date.UTC(+b.slice(0,4), +b.slice(5,7)-1, +b.slice(8,10));
+  return Math.round((db - da) / 86400000);
+}
+function fmtData(iso){ if (!iso) return '—'; return iso.slice(8,10) + '/' + iso.slice(5,7) + '/' + iso.slice(0,4); }
+function fmtDataHora(ts){ var d = new Date(ts); return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}); }
+function codVaga(id){ return 'V-' + String(id).padStart(4,'0'); }
+function iniciais(nome){ var p = String(nome||'').trim().split(/\s+/); return ((p[0]||'')[0]||'' ) .toUpperCase() + (p.length > 1 ? (p[p.length-1][0]||'').toUpperCase() : ''); }
+function primeiroNome(nome){ return String(nome||'').trim().split(/\s+/)[0] || ''; }
+function media(arr){ return arr.length ? arr.reduce(function(a,b){ return a+b; }, 0) / arr.length : null; }
+function toast(msg, erro){
+  var t = document.createElement('div'); t.className = 'toast' + (erro ? ' erro' : ''); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(function(){ t.remove(); }, erro ? 6000 : 3000);
+}
+function ehErroDeSessao(err){
+  if (!err) return false;
+  var m = (err.message || '') + ' ' + (err.code || '');
+  return err.status === 401 || /JWT|jwt|PGRST301|PGRST303/.test(m);
+}
+
+/* Dias e situação de SLA de uma vaga */
+function situacao(v){
+  var fim = v.status === 'encerrada' ? (v.data_fechamento || hojeISO())
+          : v.status === 'cancelada' ? (v.data_cancelamento || hojeISO()) : hojeISO();
+  var dias = Math.max(0, diasEntre(v.data_abertura, fim));
+  var sla = S.config.sla_dias;
+  var r = { dias: dias, restam: sla - dias };
+  if (v.status === 'cancelada') { r.chave = 'cancelada'; r.rotulo = 'Cancelada'; r.cls = ''; }
+  else if (v.status === 'encerrada') {
+    r.chave = dias <= sla ? 'fechada_prazo' : 'fechada_fora';
+    r.rotulo = dias <= sla ? 'Fechada no prazo' : 'Fechada fora do prazo';
+    r.cls = dias <= sla ? 'ok' : 'warn';
+  } else if (dias > sla) { r.chave = 'atrasada'; r.rotulo = 'Atrasada'; r.cls = 'bad'; }
+  else if (sla - dias <= 5) { r.chave = 'vencendo'; r.rotulo = 'Vence em ' + (sla - dias) + 'd'; r.cls = 'warn'; }
+  else { r.chave = 'no_prazo'; r.rotulo = 'No prazo'; r.cls = 'ok'; }
+  r.critica = estaAberta(v) && dias > S.config.dias_critica;
+  return r;
+}
+function pillSla(v){
+  var s = situacao(v);
+  var ico = s.cls === 'bad' || s.cls === 'warn' ? '#i-alerta' : (s.cls === 'ok' ? '#i-ok' : '');
+  return '<span class="pill ' + s.cls + '">' + (ico ? '<svg><use href="' + ico + '"/></svg>' : '') + esc(s.rotulo) + '</span>';
+}
+function pillEtapa(v){
+  var cls = v.status === 'encerrada' ? 'ok' : v.status === 'cancelada' ? '' : 'azul';
+  return '<span class="pill ' + cls + '">' + esc(NOME_ETAPA[v.status]) + '</span>';
+}
+
+/* ================== carga de dados ================== */
+async function consulta(fn){
+  var r = await fn();
+  if (r.error && ehErroDeSessao(r.error)) {
+    var ref = await sb.auth.refreshSession();
+    if (ref.error || !ref.data.session) { voltarAoHub(); throw r.error; }
+    r = await fn();
+  }
+  if (r.error) throw r.error;
+  return r.data;
+}
+
+async function carregarBaseInicial(){
+  var res = await Promise.all([
+    consulta(function(){ return sb.from('config').select('sla_dias,dias_critica').maybeSingle(); }),
+    consulta(function(){ return sb.rpc('filiais'); }),
+    consulta(function(){ return sb.rpc('gestores'); }),
+    consulta(function(){ return sb.from('origens').select('id,nome,ativo').order('nome'); }),
+    consulta(function(){ return sb.from('motivos_cancelamento').select('id,nome,ativo').order('nome'); }),
+    consulta(function(){ return sb.from('vagas').select('*').order('data_abertura', { ascending:false }).limit(5000); })
+  ]);
+  if (res[0]) S.config = res[0];
+  S.filiais = res[1] || []; S.gestores = res[2] || []; S.origens = res[3] || []; S.motivos = res[4] || []; S.vagas = res[5] || [];
+  S.mapFilial = {}; S.filiais.forEach(function(f){ S.mapFilial[f.id] = f.nome; });
+  S.mapGestor = {}; S.gestores.forEach(function(g){ S.mapGestor[g.id] = g.nome; });
+  S.mapOrigem = {}; S.origens.forEach(function(o){ S.mapOrigem[o.id] = o.nome; });
+  S.mapMotivo = {}; S.motivos.forEach(function(m){ S.mapMotivo[m.id] = m.nome; });
+}
+async function recarregarVagas(){
+  S.vagas = await consulta(function(){ return sb.from('vagas').select('*').order('data_abertura', { ascending:false }).limit(5000); }) || [];
+}
+function nomeFilial(id){ return S.mapFilial[id] || '—'; }
+function nomeGestor(id){ return id ? (S.mapGestor[id] || 'Gestor inativo') : '—'; }
+
+/* ================== boot ================== */
+async function iniciar(){
+  var sessao = (await sb.auth.getSession()).data.session;
+  if (!sessao) { voltarAoHub(); return; }
+  try {
+    var eu = await consulta(function(){ return sb.rpc('eu'); });
+    if (!eu || !eu.length) { mostrarSemAcesso(); return; }
+    S.eu = eu[0]; S.nivel = S.eu.nivel;
+    await carregarBaseInicial();
+  } catch (e) {
+    console.error(e);
+    mostrarSemAcesso('Não foi possível carregar o RH', 'Motivo: ' + (e.message || e) + '. Tente de novo em instantes; se continuar, avise o administrador.');
+    return;
+  }
+  montarUsuario();
+  montarNavMobile();
+  montarFiltros();
+  irPara(location.hash.replace('#','') || 'painel');
+  esconderTodasAsTelas();
+  appShell.hidden = false;
+}
+
+sb.auth.onAuthStateChange(function(event){
+  if (event === 'SIGNED_OUT') voltarAoHub();
+});
+
+/* ================== sidebar / usuário ================== */
+document.getElementById('menu-toggle').addEventListener('click', function(){ document.body.classList.toggle('menu-fechado'); });
+function avatarHtml(){
+  if (S.eu.avatar_url) return '<img src="' + esc(S.eu.avatar_url) + '" alt="">';
+  return esc(iniciais(S.eu.nome));
+}
+function montarUsuario(){
+  document.getElementById('s-user-avatar-ico').innerHTML = avatarHtml();
+  document.getElementById('mobile-avatar-btn').innerHTML = avatarHtml();
+  document.getElementById('s-user-name-lbl').textContent = S.eu.nome;
+  document.getElementById('btn-nova-vaga').hidden = !podeEditar();
+}
+var dropdown = document.getElementById('s-user-dropdown');
+function alternarDropdown(e){ e.stopPropagation(); dropdown.classList.toggle('open'); }
+document.getElementById('s-user-btn').addEventListener('click', alternarDropdown);
+document.getElementById('mobile-avatar-btn').addEventListener('click', alternarDropdown);
+document.addEventListener('click', function(e){ if (!dropdown.contains(e.target)) dropdown.classList.remove('open'); });
+
+function montarNavMobile(){
+  var row = document.getElementById('mobile-nav-row');
+  row.innerHTML = '';
+  document.querySelectorAll('#s-nav .s-link').forEach(function(a){ row.appendChild(a.cloneNode(true)); });
+}
+function irPara(pagina){
+  if (['painel','vagas'].indexOf(pagina) < 0) pagina = 'painel';
+  S.pagina = pagina;
+  document.querySelectorAll('.s-link').forEach(function(a){ a.classList.toggle('active', a.dataset.page === pagina); });
+  document.getElementById('page-painel').hidden = pagina !== 'painel';
+  document.getElementById('page-vagas').hidden = pagina !== 'vagas';
+  render();
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange', function(){ if (S.eu) irPara(location.hash.replace('#','')); });
+
+/* ================== filtros ================== */
+function opcoes(lista, vazio, sel){
+  return '<option value="">' + esc(vazio) + '</option>' + lista.map(function(o){
+    return '<option value="' + esc(o[0]) + '"' + (String(o[0]) === String(sel) ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
+  }).join('');
+}
+function valoresUnicos(campo){
+  var set = {}; S.vagas.forEach(function(v){ if (v[campo]) set[v[campo]] = 1; });
+  return Object.keys(set).sort(function(a,b){ return a.localeCompare(b,'pt-BR'); });
+}
+function filiaisComVaga(){ var ids = {}; S.vagas.forEach(function(v){ ids[v.filial_id] = 1; }); return S.filiais.filter(function(f){ return ids[f.id]; }).map(function(f){ return [f.id, f.nome]; }); }
+function gestoresComVaga(){ var ids = {}; S.vagas.forEach(function(v){ if (v.gestor_id) ids[v.gestor_id] = 1; }); return Object.keys(ids).map(function(id){ return [id, nomeGestor(id)]; }).sort(function(a,b){ return a[1].localeCompare(b[1],'pt-BR'); }); }
+
+function montarFiltros(){
+  var fp = S.fp, fv = S.fv;
+  if (!fp.de) { var d = new Date(); d.setMonth(d.getMonth() - 11, 1); fp.de = d.toISOString().slice(0,8) + '01'; }
+  if (!fp.ate) fp.ate = hojeISO();
+  document.getElementById('filtros-painel').innerHTML =
+    '<select data-f="filial">' + opcoes(filiaisComVaga(), 'Todas as filiais', fp.filial) + '</select>' +
+    '<select data-f="gestor">' + opcoes(gestoresComVaga(), 'Todos os gestores', fp.gestor) + '</select>' +
+    '<select data-f="area">' + opcoes(valoresUnicos('area').map(function(a){ return [a,a]; }), 'Todas as áreas', fp.area) + '</select>' +
+    '<select data-f="cargo">' + opcoes(valoresUnicos('cargo').map(function(a){ return [a,a]; }), 'Todos os cargos', fp.cargo) + '</select>' +
+    '<label>Período <input type="date" data-f="de" value="' + esc(fp.de) + '"> a <input type="date" data-f="ate" value="' + esc(fp.ate) + '"></label>' +
+    '<button class="link-limpar" data-limpar>Limpar</button>';
+  document.getElementById('filtros-vagas').innerHTML =
+    '<input class="busca" type="search" placeholder="Buscar cargo, código, aprovado…" data-f="busca" value="' + esc(fv.busca) + '">' +
+    '<select data-f="status">' + opcoes([['abertas','Só abertas'], ['todas','Todas']].concat(ETAPAS), 'Status', fv.status).replace('<option value="">Status</option>','') + '</select>' +
+    '<select data-f="sla">' + opcoes([['atrasada','Atrasadas'], ['vencendo','Vencendo (5 dias)'], ['critica','Críticas'], ['no_prazo','No prazo']], 'Todo SLA', fv.sla) + '</select>' +
+    '<select data-f="filial">' + opcoes(filiaisComVaga(), 'Todas as filiais', fv.filial) + '</select>' +
+    '<select data-f="gestor">' + opcoes(gestoresComVaga(), 'Todos os gestores', fv.gestor) + '</select>' +
+    '<button class="link-limpar" data-limpar>Limpar</button>';
+}
+function ligarFiltros(idWrap, alvo){
+  var wrap = document.getElementById(idWrap);
+  wrap.addEventListener('input', function(e){ var f = e.target.dataset.f; if (!f) return; alvo()[f] = e.target.value; render(); });
+  wrap.addEventListener('click', function(e){
+    if (!e.target.hasAttribute('data-limpar')) return;
+    var o = alvo(); Object.keys(o).forEach(function(k){ o[k] = ''; });
+    if (idWrap === 'filtros-vagas') o.status = 'abertas';
+    montarFiltros(); render();
+  });
+}
+ligarFiltros('filtros-painel', function(){ return S.fp; });
+ligarFiltros('filtros-vagas', function(){ return S.fv; });
+
+function filtrarPainel(v){
+  var f = S.fp;
+  return (!f.filial || v.filial_id === f.filial) && (!f.gestor || v.gestor_id === f.gestor) &&
+         (!f.area || v.area === f.area) && (!f.cargo || v.cargo === f.cargo);
+}
+function noPeriodo(data){ return data && (!S.fp.de || data >= S.fp.de) && (!S.fp.ate || data <= S.fp.ate); }
+
+/* ================== render ================== */
+function render(){
+  if (!S.eu) return;
+  if (S.pagina === 'painel') renderPainel(); else renderVagas();
+}
+
+function barras(idEl, itens, opts){
+  opts = opts || {};
+  var el = document.getElementById(idEl);
+  itens = itens.filter(function(i){ return i.valor > 0; }).sort(function(a,b){ return b.valor - a.valor; }).slice(0, opts.max || 8);
+  if (!itens.length) { el.innerHTML = '<div class="vazio">Sem dados para os filtros escolhidos.</div>'; return; }
+  var max = Math.max.apply(null, itens.map(function(i){ return i.valor; }));
+  el.innerHTML = itens.map(function(i, n){
+    var txt = opts.fmt ? opts.fmt(i.valor) : i.valor;
+    return '<div class="barra" data-n="' + n + '" title="' + esc(i.nome + ': ' + txt + (opts.sufixo || '')) + '">' +
+      '<span class="b-nome">' + esc(i.nome) + '</span>' +
+      '<span class="b-trilho"><span class="b-fill" style="width:' + (i.valor / max * 100).toFixed(1) + '%;display:block"></span></span>' +
+      '<span class="b-valor">' + esc(txt) + '</span></div>';
+  }).join('');
+  el.onclick = function(e){
+    var b = e.target.closest('.barra'); if (!b || !opts.clique) return;
+    opts.clique(itens[+b.dataset.n]);
+  };
+}
+function contarPor(lista, chave, nomeDe){
+  var m = {}; lista.forEach(function(v){ var k = v[chave]; if (k == null) return; m[k] = (m[k] || 0) + (v.quantidade || 1); });
+  return Object.keys(m).map(function(k){ return { id:k, nome:nomeDe(k), valor:m[k] }; });
+}
+function mediaPor(lista, chave, nomeDe){
+  var m = {}; lista.forEach(function(v){ var k = v[chave]; (m[k] = m[k] || []).push(situacao(v).dias); });
+  return Object.keys(m).map(function(k){ return { id:k, nome:nomeDe(k), valor:Math.round(media(m[k])), n:m[k].length }; });
+}
+function irParaLista(filtros){
+  Object.assign(S.fv, { busca:'', filial:'', gestor:'', status:'abertas', sla:'' }, filtros);
+  montarFiltros(); location.hash = 'vagas';
+}
+
+function renderPainel(){
+  var base = S.vagas.filter(filtrarPainel);
+  var abertas = base.filter(estaAberta);
+  var encerradasPer = base.filter(function(v){ return v.status === 'encerrada' && noPeriodo(v.data_fechamento); });
+  var canceladasPer = base.filter(function(v){ return v.status === 'cancelada' && noPeriodo(v.data_cancelamento); });
+  var atrasadas = abertas.filter(function(v){ return situacao(v).chave === 'atrasada'; });
+  var criticas = abertas.filter(function(v){ return situacao(v).critica; });
+  var noPrazo = encerradasPer.filter(function(v){ return situacao(v).chave === 'fechada_prazo'; });
+  var tempoMedio = media(encerradasPer.map(function(v){ return situacao(v).dias; }));
+  var pct = encerradasPer.length ? Math.round(noPrazo.length / encerradasPer.length * 100) : null;
+
+  document.getElementById('painel-sub').textContent = 'Recrutamento e Seleção · SLA de ' + S.config.sla_dias + ' dias · período ' + fmtData(S.fp.de) + ' a ' + fmtData(S.fp.ate);
+  var kpis = [
+    { l:'Vagas abertas', v:abertas.length, s:abertas.reduce(function(a,v){ return a + (v.quantidade||1); }, 0) + ' posições · situação atual', go:{ status:'abertas' } },
+    { l:'Fora do SLA', v:atrasadas.length, s:'abertas há mais de ' + S.config.sla_dias + ' dias', cls: atrasadas.length ? 'alerta' : '', go:{ sla:'atrasada' } },
+    { l:'Vagas críticas', v:criticas.length, s:'abertas há mais de ' + S.config.dias_critica + ' dias', cls: criticas.length ? 'alerta' : '', go:{ sla:'critica' } },
+    { l:'Fechadas no período', v:encerradasPer.length, s: pct == null ? 'nenhuma no período' : pct + '% dentro do SLA', go:{ status:'encerrada' } },
+    { l:'Tempo médio de fechamento', v: tempoMedio == null ? '—' : Math.round(tempoMedio) + 'd', s:'vagas fechadas no período', cls: tempoMedio > S.config.sla_dias ? 'atencao' : '', go:{ status:'encerrada' } },
+    { l:'Canceladas no período', v:canceladasPer.length, s:'ver motivos abaixo', go:{ status:'cancelada' } }
+  ];
+  var elK = document.getElementById('kpis');
+  elK.innerHTML = kpis.map(function(k, i){
+    return '<button class="kpi ' + (k.cls || '') + '" data-i="' + i + '"><div class="k-label">' + esc(k.l) + '</div><div class="k-valor">' + esc(k.v) + '</div><div class="k-sub">' + esc(k.s) + '</div></button>';
+  }).join('');
+  elK.onclick = function(e){
+    var b = e.target.closest('.kpi'); if (!b) return;
+    var go = Object.assign({ filial:S.fp.filial, gestor:S.fp.gestor }, kpis[+b.dataset.i].go);
+    irParaLista(go);
+  };
+
+  barras('g-filial', contarPor(abertas, 'filial_id', nomeFilial), { clique:function(i){ irParaLista({ filial:i.id }); } });
+  barras('g-gestor', contarPor(abertas, 'gestor_id', nomeGestor), { clique:function(i){ irParaLista({ gestor:i.id }); } });
+  barras('g-etapa', ETAPAS.slice(0,6).map(function(e){
+    return { id:e[0], nome:e[1], valor:abertas.filter(function(v){ return v.status === e[0]; }).reduce(function(a,v){ return a + (v.quantidade||1); }, 0) };
+  }), { max:6, clique:function(i){ irParaLista({ status:i.id }); } });
+  barras('g-tempo-filial', mediaPor(encerradasPer, 'filial_id', nomeFilial), { fmt:function(x){ return x + 'd'; } });
+  barras('g-tempo-cargo', mediaPor(encerradasPer, 'cargo', function(k){ return k; }), { fmt:function(x){ return x + 'd'; } });
+  barras('g-origem', contarPor(encerradasPer, 'origem_id', function(k){ return S.mapOrigem[k] || '—'; }));
+  barras('g-cancel', contarPor(canceladasPer, 'motivo_cancelamento_id', function(k){ return S.mapMotivo[k] || '—'; }));
+
+  document.getElementById('criticas-sub').textContent = 'Abertas há mais de ' + S.config.dias_critica + ' dias, da mais antiga para a mais nova';
+  var lista = criticas.slice().sort(function(a,b){ return situacao(b).dias - situacao(a).dias; });
+  document.getElementById('t-criticas').innerHTML = lista.length ? tabelaVagas(lista.slice(0, 15)) : '<div class="vazio">Nenhuma vaga crítica. 👏</div>';
+}
+
+function filtrarLista(v){
+  var f = S.fv, s = situacao(v);
+  if (f.status === 'abertas' && !estaAberta(v)) return false;
+  if (f.status && f.status !== 'abertas' && f.status !== 'todas' && v.status !== f.status) return false;
+  if (f.sla === 'critica' && !s.critica) return false;
+  if (f.sla && f.sla !== 'critica' && s.chave !== f.sla) return false;
+  if (f.filial && v.filial_id !== f.filial) return false;
+  if (f.gestor && v.gestor_id !== f.gestor) return false;
+  if (f.busca) {
+    var q = f.busca.toLowerCase();
+    var alvo = [codVaga(v.id), v.cargo, v.area, v.candidato_aprovado, nomeFilial(v.filial_id), nomeGestor(v.gestor_id)].join(' ').toLowerCase();
+    if (alvo.indexOf(q) < 0) return false;
+  }
+  return true;
+}
+function vagasDaLista(){ return S.vagas.filter(filtrarLista); }
+
+function tabelaVagas(lista){
+  return '<table><thead><tr><th>Código</th><th>Cargo</th><th>Filial</th><th>Gestor</th><th>Abertura</th><th class="num">Dias</th><th>Etapa</th><th>SLA</th></tr></thead><tbody>' +
+    lista.map(function(v){
+      return '<tr data-id="' + v.id + '"><td class="cod">' + codVaga(v.id) + '</td><td><strong>' + esc(v.cargo) + '</strong>' + (v.quantidade > 1 ? ' <span class="pill">' + v.quantidade + ' posições</span>' : '') + '</td>' +
+        '<td>' + esc(nomeFilial(v.filial_id)) + '</td><td>' + esc(nomeGestor(v.gestor_id)) + '</td><td>' + fmtData(v.data_abertura) + '</td>' +
+        '<td class="num">' + situacao(v).dias + '</td><td>' + pillEtapa(v) + '</td><td>' + pillSla(v) + '</td></tr>';
+    }).join('') + '</tbody></table>';
+}
+function renderVagas(){
+  var lista = vagasDaLista();
+  document.getElementById('vagas-sub').textContent = lista.length + (lista.length === 1 ? ' vaga' : ' vagas') + ' · SLA de ' + S.config.sla_dias + ' dias';
+  document.getElementById('t-vagas').innerHTML = lista.length ? tabelaVagas(lista) : '<div class="vazio" style="padding:28px">Nenhuma vaga com esses filtros.</div>';
+}
+document.addEventListener('click', function(e){
+  var tr = e.target.closest('tr[data-id]'); if (!tr) return;
+  abrirDetalhe(+tr.dataset.id);
+});
+
+/* ================== modais ================== */
+function abrirModal(id){ document.getElementById(id).hidden = false; }
+function fecharModal(id){ document.getElementById(id).hidden = true; }
+['modal-detalhe','modal-form'].forEach(function(id){
+  var m = document.getElementById(id);
+  m.addEventListener('click', function(e){ if (e.target === m || e.target.closest('[data-fechar]')) fecharModal(id); });
+});
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { fecharModal('modal-form'); fecharModal('modal-detalhe'); } });
+
+async function abrirDetalhe(id){
+  var v = S.vagas.find(function(x){ return x.id === id; }); if (!v) return;
+  var s = situacao(v);
+  document.getElementById('det-titulo').textContent = codVaga(v.id) + ' · ' + v.cargo;
+  var itens = [
+    ['Filial', nomeFilial(v.filial_id)], ['Área', v.area || '—'], ['Gestor solicitante', nomeGestor(v.gestor_id)],
+    ['Tipo', v.tipo === 'aumento_quadro' ? 'Aumento de quadro' : 'Substituição'], ['Posições', v.quantidade],
+    ['Abertura', fmtData(v.data_abertura)], ['Etapa atual', NOME_ETAPA[v.status]]
+  ];
+  if (v.status === 'encerrada') itens.push(['Fechamento', fmtData(v.data_fechamento)], ['Aprovado', v.candidato_aprovado || '—'], ['Origem do aprovado', S.mapOrigem[v.origem_id] || '—']);
+  if (v.status === 'cancelada') itens.push(['Cancelamento', fmtData(v.data_cancelamento)], ['Motivo', S.mapMotivo[v.motivo_cancelamento_id] || '—']);
+  var slaTxt = estaAberta(v)
+    ? (s.restam >= 0 ? 'dias em aberto · faltam ' + s.restam + ' para o SLA de ' + S.config.sla_dias : 'dias em aberto · ' + (-s.restam) + ' além do SLA de ' + S.config.sla_dias)
+    : 'dias do início ao fim · SLA de ' + S.config.sla_dias;
+  document.getElementById('det-corpo').innerHTML =
+    '<div class="sla-box"><div class="sla-num">' + s.dias + '</div><div><div class="sla-txt">' + esc(slaTxt) + '</div>' + pillSla(v) + '</div></div>' +
+    '<div class="det-grid">' + itens.map(function(i){ return '<div class="det-item"><div class="d-l">' + esc(i[0]) + '</div><div class="d-v">' + esc(i[1]) + '</div></div>'; }).join('') + '</div>' +
+    (v.observacoes ? '<div class="det-item" style="margin-bottom:20px"><div class="d-l">Observações</div><div class="d-v" style="font-weight:500;white-space:pre-wrap">' + esc(v.observacoes) + '</div></div>' : '') +
+    '<div class="sec-tit">Histórico</div><ul class="timeline" id="det-hist"><li><div class="t-sub">Carregando…</div></li></ul>';
+  var btEd = document.getElementById('det-editar');
+  btEd.hidden = !podeEditar();
+  btEd.onclick = function(){ fecharModal('modal-detalhe'); abrirFormVaga(v); };
+  abrirModal('modal-detalhe');
+  try {
+    var h = await consulta(function(){ return sb.rpc('historico_vaga', { p_vaga_id: v.id }); }) || [];
+    var anterior = null;
+    document.getElementById('det-hist').innerHTML = h.map(function(x){
+      var dur = anterior ? ' · ' + Math.max(0, Math.round((new Date(x.mudou_em) - new Date(anterior)) / 86400000)) + 'd na etapa anterior' : '';
+      anterior = x.mudou_em;
+      var tit = x.status_de ? NOME_ETAPA[x.status_de] + ' → ' + NOME_ETAPA[x.status_para] : 'Vaga registrada como ' + NOME_ETAPA[x.status_para];
+      return '<li><div class="t-tit">' + esc(tit) + '</div><div class="t-sub">' + esc(fmtDataHora(x.mudou_em) + (x.mudou_por_nome ? ' · ' + x.mudou_por_nome : '') + dur) + '</div></li>';
+    }).join('') || '<li><div class="t-sub">Sem histórico.</div></li>';
+  } catch (e) {
+    document.getElementById('det-hist').innerHTML = '<li><div class="t-sub">Não foi possível carregar o histórico: ' + esc(e.message || e) + '</div></li>';
+  }
+}
+
+/* ---- formulário ---- */
+var form = document.getElementById('form-vaga');
+var vagaEditando = null;
+function atualizarCamposCondicionais(){
+  var st = form.status.value;
+  form.querySelectorAll('[data-se]').forEach(function(el){ el.hidden = el.dataset.se !== st; });
+}
+form.status.addEventListener('change', atualizarCamposCondicionais);
+
+function abrirFormVaga(v){
+  if (!podeEditar()) return;
+  vagaEditando = v || null;
+  document.getElementById('form-titulo').textContent = v ? 'Editar ' + codVaga(v.id) : 'Nova vaga';
+  form.filial_id.innerHTML = opcoes(S.filiais.map(function(f){ return [f.id, f.nome]; }), 'Selecione…', v ? v.filial_id : '');
+  var gest = S.gestores.map(function(g){ return [g.id, g.nome]; });
+  if (v && v.gestor_id && !S.mapGestor[v.gestor_id]) gest.push([v.gestor_id, 'Gestor inativo']);
+  form.gestor_id.innerHTML = opcoes(gest, 'Não informado', v ? v.gestor_id : '');
+  form.status.innerHTML = ETAPAS.map(function(e){ return '<option value="' + e[0] + '"' + ((v ? v.status : 'solicitada') === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join('');
+  form.origem_id.innerHTML = opcoes(S.origens.filter(function(o){ return o.ativo || (v && v.origem_id === o.id); }).map(function(o){ return [o.id, o.nome]; }), 'Não informada', v ? v.origem_id : '');
+  form.motivo_cancelamento_id.innerHTML = opcoes(S.motivos.filter(function(m){ return m.ativo || (v && v.motivo_cancelamento_id === m.id); }).map(function(m){ return [m.id, m.nome]; }), 'Selecione…', v ? v.motivo_cancelamento_id : '');
+  form.cargo.value = v ? v.cargo : '';
+  form.area.value = v ? (v.area || '') : '';
+  form.tipo.value = v ? v.tipo : 'substituicao';
+  form.data_abertura.value = v ? v.data_abertura : hojeISO();
+  form.data_abertura.max = hojeISO();
+  form.quantidade.value = v ? v.quantidade : 1;
+  form.candidato_aprovado.value = v ? (v.candidato_aprovado || '') : '';
+  form.observacoes.value = v ? (v.observacoes || '') : '';
+  document.getElementById('lista-cargos').innerHTML = valoresUnicos('cargo').map(function(c){ return '<option value="' + esc(c) + '">'; }).join('');
+  document.getElementById('lista-areas').innerHTML = valoresUnicos('area').map(function(c){ return '<option value="' + esc(c) + '">'; }).join('');
+  document.getElementById('form-erro').hidden = true;
+  atualizarCamposCondicionais();
+  abrirModal('modal-form');
+  setTimeout(function(){ form.cargo.focus(); }, 30);
+}
+
+form.addEventListener('submit', async function(e){
+  e.preventDefault();
+  var erro = document.getElementById('form-erro');
+  function falha(msg){ erro.textContent = msg; erro.hidden = false; }
+  var st = form.status.value;
+  var dados = {
+    cargo: form.cargo.value.trim(),
+    area: form.area.value.trim() || null,
+    filial_id: form.filial_id.value || null,
+    gestor_id: form.gestor_id.value || null,
+    tipo: form.tipo.value,
+    data_abertura: form.data_abertura.value,
+    quantidade: parseInt(form.quantidade.value, 10) || 1,
+    status: st,
+    origem_id: st === 'encerrada' && form.origem_id.value ? +form.origem_id.value : null,
+    candidato_aprovado: st === 'encerrada' ? (form.candidato_aprovado.value.trim() || null) : null,
+    motivo_cancelamento_id: st === 'cancelada' && form.motivo_cancelamento_id.value ? +form.motivo_cancelamento_id.value : null,
+    observacoes: form.observacoes.value.trim() || null
+  };
+  if (!dados.cargo) return falha('Informe o cargo.');
+  if (!dados.filial_id) return falha('Escolha a filial.');
+  if (!dados.data_abertura) return falha('Informe a data de abertura.');
+  if (dados.data_abertura > hojeISO()) return falha('A data de abertura não pode estar no futuro.');
+  if (dados.quantidade < 1 || dados.quantidade > 99) return falha('Quantidade de posições deve ficar entre 1 e 99.');
+  if (st === 'cancelada' && !dados.motivo_cancelamento_id) return falha('Escolha o motivo do cancelamento.');
+
+  var bt = document.getElementById('form-salvar'); bt.disabled = true; bt.textContent = 'Salvando…';
+  try {
+    if (vagaEditando) {
+      await consulta(function(){ return sb.from('vagas').update(dados).eq('id', vagaEditando.id).select('id'); });
+    } else {
+      await consulta(function(){ return sb.from('vagas').insert(dados).select('id'); });
+    }
+    await recarregarVagas();
+    fecharModal('modal-form');
+    montarFiltros(); render();
+    toast(vagaEditando ? 'Vaga atualizada.' : 'Vaga criada.');
+  } catch (err) {
+    console.error(err);
+    falha('Não foi possível salvar: ' + (err.message || err));
+  } finally {
+    bt.disabled = false; bt.textContent = 'Salvar';
+  }
+});
+
+/* ================== exportação (com registro, LGPD) ================== */
+async function registrarExportacao(formato, conteudo, filtros){
+  try { await consulta(function(){ return sb.from('exportacoes').insert({ formato: formato, conteudo: conteudo, filtros: filtros }); }); }
+  catch (e) { console.warn('Falha ao registrar exportação', e); throw e; }
+}
+async function exportarExcel(){
+  if (typeof XLSX === 'undefined') { toast('O exportador ainda está carregando. Tente de novo em instantes.', true); return; }
+  var lista = vagasDaLista();
+  try { await registrarExportacao('excel', 'vagas (' + lista.length + ')', S.fv); }
+  catch (e) { toast('Exportação bloqueada: não foi possível registrar. ' + (e.message || ''), true); return; }
+  var linhas = lista.map(function(v){
+    var s = situacao(v);
+    return {
+      'Código': codVaga(v.id), 'Cargo': v.cargo, 'Área': v.area || '', 'Filial': nomeFilial(v.filial_id), 'Gestor': nomeGestor(v.gestor_id),
+      'Tipo': v.tipo === 'aumento_quadro' ? 'Aumento de quadro' : 'Substituição', 'Posições': v.quantidade,
+      'Abertura': fmtData(v.data_abertura), 'Etapa': NOME_ETAPA[v.status], 'Dias': s.dias, 'SLA': s.rotulo,
+      'Fechamento': v.data_fechamento ? fmtData(v.data_fechamento) : '', 'Origem do aprovado': S.mapOrigem[v.origem_id] || '',
+      'Cancelamento': v.data_cancelamento ? fmtData(v.data_cancelamento) : '', 'Motivo do cancelamento': S.mapMotivo[v.motivo_cancelamento_id] || ''
+    };
+  });
+  var ws = XLSX.utils.json_to_sheet(linhas);
+  var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Vagas');
+  XLSX.writeFile(wb, 'vagas_' + hojeISO() + '.xlsx');
+}
+async function exportarPdf(qual){
+  try { await registrarExportacao('pdf', qual === 'painel' ? 'painel de vagas' : 'lista de vagas', qual === 'painel' ? S.fp : S.fv); }
+  catch (e) { toast('Exportação bloqueada: não foi possível registrar. ' + (e.message || ''), true); return; }
+  window.print(); // "Salvar como PDF" no diálogo de impressão
+}
+
+iniciar();
+</script>
+</body>
+</html>
