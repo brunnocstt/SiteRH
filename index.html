@@ -2246,15 +2246,16 @@ document.getElementById('t-uni').addEventListener('click', function(ev){
 function entregaPorId(id){ return S.entregas.find(function(e){ return String(e.id) === String(id); }); }
 
 /* ---- PDF do termo (jsPDF) ---- */
-function logoPng(cor, alpha, largPx){
+function logoPng(cor, alpha, largPx, empilhada){
   // IVECO em cima, DEVA embaixo, centralizadas (o símbolo do app é horizontal: 6 traços = IVECO, 5 = DEVA)
   return new Promise(function(resolve){
     var fim = setTimeout(function(){ resolve(null); }, 1500);
     try {
       var ds = [].slice.call(document.getElementById('i-logo-ivecodeva').querySelectorAll('path')).map(function(x){ return '<path d="' + x.getAttribute('d') + '"/>'; });
-      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 34" width="900" height="340" fill="' + cor + '">' +
-        '<g>' + ds.slice(0, 6).join('') + '</g><g transform="translate(-97.7,19)">' + ds.slice(6).join('') + '</g></svg>';
-      var h = Math.round(largPx * 34 / 90), img = new Image();
+      var svg = empilhada
+        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 34" width="900" height="340" fill="' + cor + '"><g>' + ds.slice(0, 6).join('') + '</g><g transform="translate(-97.7,19)">' + ds.slice(6).join('') + '</g></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 183 15" width="1830" height="150" fill="' + cor + '">' + ds.join('') + '</svg>';
+      var h = Math.round(largPx * (empilhada ? 34 / 90 : 15 / 183)), img = new Image();
       img.onload = function(){
         try { var c = document.createElement('canvas'); c.width = largPx; c.height = h; var cx = c.getContext('2d'); cx.globalAlpha = alpha; cx.drawImage(img, 0, 0, largPx, h); clearTimeout(fim); resolve(c.toDataURL('image/png')); }
         catch (e) { clearTimeout(fim); resolve(null); }
@@ -2282,15 +2283,15 @@ async function gerarTermoPdf(e){
   if (!window.jspdf || !window.jspdf.jsPDF) { toast('O gerador de PDF ainda está carregando. Tente de novo em instantes.', true); return; }
   var p = S.mapColab[e.pessoa_id] || {};
   var AZUL = [25, 85, 255], TINTA = [24, 28, 45], CINZA = [110, 116, 135];
-  var logo = await logoPng('#000000', 1, 450), marca = await logoPng('#000000', 0.06, 900);
+  var logo = await logoPng('#000000', 1, 900, false), marca = await logoPng('#000000', 0.06, 900, true);
   var doc = new window.jspdf.jsPDF({ unit:'mm', format:'a4' });
   var L = 15, R = 195, W = R - L;
 
-  // papel timbrado: marca d'água centralizada atrás de tudo, faixa azul e logo no topo
+  // papel timbrado: marca d'água empilhada e centralizada atrás de tudo; faixa azul e logo horizontal no topo
   if (marca) doc.addImage(marca, 'PNG', 40, 124, 130, 130 * 34 / 90);
   doc.setFillColor(AZUL[0], AZUL[1], AZUL[2]); doc.rect(0, 0, 210, 5, 'F');
-  if (logo) doc.addImage(logo, 'PNG', 90, 11, 30, 30 * 34 / 90);
-  else { doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.text('IVECO DEVA', 105, 20, { align:'center' }); }
+  if (logo) doc.addImage(logo, 'PNG', L, 17, 50, 50 * 15 / 183);
+  else { doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.text('IVECO DEVA', L, 22); }
   doc.setDrawColor(AZUL[0], AZUL[1], AZUL[2]); doc.setLineWidth(0.6); doc.line(L, 29, R, 29);
 
   // título
