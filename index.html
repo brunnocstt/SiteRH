@@ -238,6 +238,72 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 .toast.erro{ background:var(--bad); }
 @media (max-width:767px){ .toast{ bottom:90px; } }
 
+/* avatar */
+.avatar{ border-radius:999px; background:var(--accent); color:#fff; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; letter-spacing:-.02em; line-height:1; overflow:hidden; }
+.avatar img{ width:100%; height:100%; object-fit:cover; }
+.quem{ display:flex; align-items:center; gap:10px; min-width:0; }
+.quem .avatar{ width:32px; height:32px; font-size:.7rem; }
+.quem .q-nome{ font-weight:700; }
+.quem .q-sub{ font-size:.72rem; color:var(--muted); }
+
+/* organograma (mesmo visual do Hub, só leitura) */
+.org-tree{ overflow-x:auto; overflow-y:visible; padding:24px 24px 48px; scrollbar-width:thin; scrollbar-color:var(--line-soft) transparent; }
+.org-tree::-webkit-scrollbar{ height:10px; width:10px; }
+.org-tree::-webkit-scrollbar-track{ background:transparent; }
+.org-tree::-webkit-scrollbar-thumb{ background-color:var(--line-soft); border-radius:999px; border:3px solid var(--canvas); background-clip:padding-box; }
+.org-tree-principal{ display:flex; flex-direction:column; align-items:center; width:100%; }
+.org-tree-principal > .org-chart{ width:100%; }
+.org-tree-principal > .org-chart > li:has(> ul.org-chart-grid){ flex:1 1 auto; }
+.org-tree-soltos{ display:flex; gap:32px; align-items:flex-start; }
+.org-tree-soltos-label{ display:flex; align-items:center; gap:10px; font-size:.72rem; font-weight:800; color:var(--muted-2); text-transform:uppercase; letter-spacing:.05em; margin:28px 0 14px; }
+.org-tree-soltos-label::after{ content:''; flex:1; height:1px; background:var(--line-soft); }
+.org-breadcrumb{ display:flex; flex-direction:column; align-items:center; }
+.org-breadcrumb-line{ width:1.5px; height:14px; background:var(--line); }
+.org-chart, .org-chart ul{ margin:0; padding:0; list-style:none; }
+.org-chart{ display:flex; justify-content:center; flex-shrink:0; }
+.org-chart ul{ display:flex; justify-content:flex-start; }
+.org-chart li{ list-style:none; position:relative; padding:24px 8px 0; text-align:center; }
+.org-chart li::before, .org-chart li::after{ content:''; position:absolute; top:0; right:50%; width:50%; height:16px; border-top:1.5px solid var(--line); }
+.org-chart li::after{ right:auto; left:50%; border-left:1.5px solid var(--line); }
+.org-chart li:first-child::before{ border:0 none; }
+.org-chart li:last-child::after{ border:0 none; }
+.org-chart li:last-child::before{ border-right:1.5px solid var(--line); border-radius:0 8px 0 0; }
+.org-chart li:first-child::after{ border-radius:8px 0 0 0; }
+.org-chart li:only-child{ padding-top:0; }
+.org-chart li:only-child::before, .org-chart li:only-child::after{ display:none; border:0 none; }
+.org-chart li > ul{ padding-top:16px; position:relative; }
+.org-chart li > ul::before{ content:''; position:absolute; top:0; left:50%; width:0; height:16px; border-left:1.5px solid var(--line); }
+.org-chart ul.org-chart-grid{ display:flex; flex-wrap:wrap; justify-content:center; width:100%; gap:16px 10px; padding-top:16px; }
+.org-chart ul.org-chart-grid > li{ padding:0; }
+.org-chart ul.org-chart-grid > li::before, .org-chart ul.org-chart-grid > li::after{ display:none; }
+.org-node-card{ display:inline-flex; flex-direction:column; align-items:center; gap:5px; background:var(--surface); border:1px solid var(--line-soft); border-radius:14px; padding:9px 9px 7px; box-shadow:var(--shadow-card); width:126px; position:relative; transition:box-shadow .15s, border-color .15s, transform .15s; }
+.org-node-card .avatar{ width:32px; height:32px; font-size:.64rem; }
+.org-node-info{ min-width:0; width:100%; }
+.org-node-info .nome{ font-size:.68rem; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.org-node-info .cargo{ font-size:.6rem; color:var(--muted-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+.org-node-ver{ all:unset; box-sizing:border-box; position:absolute; top:5px; right:5px; width:18px; height:18px; border-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted-2); opacity:0; transition:opacity .15s, background .15s, color .15s; z-index:3; }
+.org-node-ver svg{ width:11px; height:11px; }
+.org-node-card:hover .org-node-ver{ opacity:1; }
+.org-node-ver:hover{ background:var(--surface-2); color:var(--accent); }
+.org-node-badge{ position:absolute; left:50%; bottom:-9px; transform:translateX(-50%); min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:var(--surface); border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:.6rem; font-weight:800; color:var(--muted); z-index:2; }
+.org-node-clicavel{ cursor:pointer; }
+.org-node-clicavel:hover{ border-color:var(--accent); box-shadow:var(--shadow-lift); transform:translateY(-2px); }
+.org-node-clicavel:hover .org-node-badge{ border-color:var(--accent); color:var(--accent); }
+.org-node-atual{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-tint-10); }
+.org-node-match{ border-color:var(--accent); background:var(--accent-soft); }
+.org-node-compacta{ flex-direction:row; width:auto; min-width:150px; padding:5px 10px 5px 6px; border-radius:13px; gap:7px; box-shadow:none; background:var(--surface-2); border-color:transparent; }
+.org-node-compacta .avatar{ width:20px; height:20px; font-size:.56rem; }
+
+/* documentos */
+.doc-lista{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+.doc-item{ display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:16px; padding:10px 14px; }
+.doc-item .doc-info{ flex:1; min-width:0; }
+.doc-item .doc-tit{ font-size:.84rem; font-weight:700; }
+.doc-item .doc-sub{ font-size:.74rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.doc-item .btn{ padding:6px 12px; font-size:.78rem; }
+.upload-box{ background:var(--surface-2); border-radius:20px; padding:16px; }
+.upload-box .form-grid{ margin-bottom:12px; }
+
 /* impressão / PDF */
 @media print{
   .sidebar, .mobile-header, .mobile-bottom-nav, .head-actions, .filtros, .s-user-dropdown, .toast{ display:none !important; }
@@ -276,6 +342,9 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
     <symbol id="i-excel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 12l6 6M15 12l-6 6"/></symbol>
     <symbol id="i-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></symbol>
     <symbol id="i-alerta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 16.5v.01"/><circle cx="12" cy="12" r="9"/></symbol>
+    <symbol id="i-org" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="5" rx="1.5"/><rect x="2.5" y="16" width="6" height="5" rx="1.5"/><rect x="15.5" y="16" width="6" height="5" rx="1.5"/><path d="M12 8v4M5.5 16v-4h13v4"/></symbol>
+    <symbol id="i-pessoas" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.2c2.6.2 4.5 2 4.5 5.3"/></symbol>
+    <symbol id="i-olho" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
     <symbol id="i-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
   </defs>
 </svg>
@@ -303,6 +372,8 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
     <nav class="s-nav" id="s-nav">
       <a class="s-link active" data-page="painel" href="#painel"><span class="ico"><svg width="17" height="17"><use href="#i-painel"/></svg></span><span class="s-label">Painel de vagas</span></a>
       <a class="s-link" data-page="vagas" href="#vagas"><span class="ico"><svg width="17" height="17"><use href="#i-vagas"/></svg></span><span class="s-label">Vagas</span></a>
+      <a class="s-link" data-page="colaboradores" href="#colaboradores"><span class="ico"><svg width="17" height="17"><use href="#i-pessoas"/></svg></span><span class="s-label">Colaboradores</span></a>
+      <a class="s-link" data-page="organograma" href="#organograma"><span class="ico"><svg width="17" height="17"><use href="#i-org"/></svg></span><span class="s-label">Organograma</span></a>
     </nav>
     <div class="s-foot">
       <button class="s-user-btn" id="s-user-btn">
@@ -365,6 +436,32 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
       <div class="filtros" id="filtros-vagas"></div>
       <div class="tabela-wrap"><div class="tabela-scroll" id="t-vagas"></div></div>
     </section>
+    <!-- ===== Organograma ===== -->
+    <section class="page" id="page-organograma" hidden>
+      <div class="page-head">
+        <div>
+          <h1>Organograma</h1>
+          <p id="org-sub">Quem responde a quem. A estrutura é mantida no Hub; aqui é só consulta.</p>
+        </div>
+      </div>
+      <div class="filtros" id="filtros-org"></div>
+      <div class="tabela-wrap"><div class="org-tree" id="org-tree"></div></div>
+    </section>
+
+    <!-- ===== Colaboradores ===== -->
+    <section class="page" id="page-colaboradores" hidden>
+      <div class="page-head">
+        <div>
+          <h1>Colaboradores</h1>
+          <p id="colab-sub"></p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost" onclick="exportarColabExcel()"><svg><use href="#i-excel"/></svg>Excel</button>
+        </div>
+      </div>
+      <div class="filtros" id="filtros-colab"></div>
+      <div class="tabela-wrap"><div class="tabela-scroll" id="t-colab"></div></div>
+    </section>
   </main>
 
   <nav class="mobile-bottom-nav">
@@ -424,6 +521,38 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
       </form>
       <datalist id="lista-cargos"></datalist>
       <datalist id="lista-areas"></datalist>
+    </div>
+  </div>
+</div>
+
+<!-- modal: ficha do colaborador (dados + documentos) -->
+<div class="modal-overlay" id="modal-colab" hidden>
+  <div class="modal-card largo">
+    <div class="modal-card-scroll">
+      <div class="modal-head">
+        <h2 id="colab-titulo">Colaborador</h2>
+        <button type="button" class="modal-close" data-fechar aria-label="Fechar"><svg width="18" height="18"><use href="#i-x"/></svg></button>
+      </div>
+      <div id="colab-corpo"></div>
+      <div id="colab-docs-wrap" hidden>
+        <div class="sec-tit">Documentos</div>
+        <div class="doc-lista" id="doc-lista"></div>
+        <div class="upload-box" id="upload-box" hidden>
+          <div class="sec-tit" style="margin-top:0">Enviar documento (PDF)</div>
+          <div class="form-grid">
+            <label class="campo"><span>Tipo *</span>
+              <select id="up-tipo"><option value="entrega_uniforme">Entrega de uniforme</option><option value="certificado_treinamento">Certificado de treinamento</option></select>
+            </label>
+            <label class="campo"><span>Data do documento *</span><input type="date" id="up-data"></label>
+            <label class="campo full"><span id="up-desc-rotulo">Itens entregues</span><input id="up-desc" maxlength="500" autocomplete="off" placeholder="Ex.: 2 camisas, 2 calças, 1 jaqueta"></label>
+            <label class="campo full"><span>Arquivo PDF assinado e digitalizado * (até 5 MB)</span><input type="file" id="up-arquivo" accept="application/pdf,.pdf"></label>
+          </div>
+          <div class="erro-form" id="up-erro" hidden></div>
+          <div class="modal-actions" style="margin-top:6px"><button type="button" class="btn btn-primary" id="up-enviar">Enviar</button></div>
+        </div>
+        <p class="modal-note">Só PDF de entrega de uniforme e certificado de treinamento. Não envie contrato, holerite, atestado, ASO ou documentos com salário. Toda abertura de documento fica registrada.</p>
+      </div>
+      <div class="modal-actions"><button type="button" class="btn btn-ghost" data-fechar>Fechar</button></div>
     </div>
   </div>
 </div>
@@ -596,6 +725,8 @@ async function iniciar(){
     if (!eu || !eu.length) { mostrarSemAcesso(); return; }
     S.eu = eu[0]; S.nivel = S.eu.nivel;
     await carregarBaseInicial();
+    try { await carregarColaboradores(); montarFiltrosColab(); }
+    catch (e2) { console.error(e2); toast('Não foi possível carregar os colaboradores: ' + (e2.message || e2), true); }
   } catch (e) {
     console.error(e);
     mostrarSemAcesso('Não foi possível carregar o RH', 'Motivo: ' + (e.message || e) + '. Tente de novo em instantes; se continuar, avise o administrador.');
@@ -637,11 +768,11 @@ function montarNavMobile(){
   document.querySelectorAll('#s-nav .s-link').forEach(function(a){ row.appendChild(a.cloneNode(true)); });
 }
 function irPara(pagina){
-  if (['painel','vagas'].indexOf(pagina) < 0) pagina = 'painel';
+  var PAGINAS = ['painel','vagas','colaboradores','organograma'];
+  if (PAGINAS.indexOf(pagina) < 0) pagina = 'painel';
   S.pagina = pagina;
   document.querySelectorAll('.s-link').forEach(function(a){ a.classList.toggle('active', a.dataset.page === pagina); });
-  document.getElementById('page-painel').hidden = pagina !== 'painel';
-  document.getElementById('page-vagas').hidden = pagina !== 'vagas';
+  PAGINAS.forEach(function(pg){ document.getElementById('page-' + pg).hidden = pagina !== pg; });
   render();
   window.scrollTo(0,0);
 }
@@ -702,7 +833,10 @@ function noPeriodo(data){ return data && (!S.fp.de || data >= S.fp.de) && (!S.fp
 /* ================== render ================== */
 function render(){
   if (!S.eu) return;
-  if (S.pagina === 'painel') renderPainel(); else renderVagas();
+  if (S.pagina === 'painel') renderPainel();
+  else if (S.pagina === 'vagas') renderVagas();
+  else if (S.pagina === 'colaboradores') renderColab();
+  else if (S.pagina === 'organograma') renderOrg();
 }
 
 function barras(idEl, itens, opts){
@@ -972,6 +1106,315 @@ async function exportarPdf(qual){
   catch (e) { toast('Exportação bloqueada: não foi possível registrar. ' + (e.message || ''), true); return; }
   window.print(); // "Salvar como PDF" no diálogo de impressão
 }
+
+/* ================== colaboradores · organograma · documentos ================== */
+S.colab = []; S.mapColab = {}; S.docCont = {}; S.docsAtuais = []; S.colabAberto = null; S.orgFoco = null;
+S.fo = { filial:'', area:'' };                                                  // filtros do organograma
+S.fc = { busca:'', status:'ativos', filial:'', area:'', gestor:'' };            // filtros dos colaboradores
+
+var CARGO_MIN = { de:1, da:1, do:1, das:1, dos:1, e:1, a:1, o:1, ao:1, aos:1, em:1, no:1, na:1, nos:1, nas:1, para:1 };
+var SIGLAS_AREA = { pdi:1, crm:1, sgi:1, sesmt:1, ti:1, rh:1 };
+var SIGLAS_CARGO = { rh:1, ti:1, bi:1, crm:1, pdi:1, sgi:1, sesmt:1, ii:1, iii:1, iv:1 };   // siglas e algarismos romanos ficam em caixa alta
+function capitalizarCargo(s){
+  if (!s) return '';
+  return String(s).toLowerCase().split(' ').map(function(w, i){
+    if (!w) return w;
+    if (SIGLAS_CARGO[w.replace(/[^a-z]/g, '')]) return w.toUpperCase();
+    if (i > 0 && CARGO_MIN[w]) return w;
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join(' ');
+}
+function capitalizarArea(s){
+  if (!s) return '';
+  return String(s).toLowerCase().split(' ').map(function(w, i){
+    if (!w) return w;
+    var base = w.replace(/[^a-zà-ú]/g, '');
+    if (SIGLAS_AREA[base]) return w.toUpperCase();
+    if (i > 0 && CARGO_MIN[w]) return w;
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join(' ');
+}
+function areaChave(p){ return p.centro_custo ? String(p.centro_custo).trim().toUpperCase() : ''; }
+var AVATAR_CORES = ['#1955FF','#7C3AED','#059669','#DB2777','#D97706','#0EA5E9','#6366F1'];
+function corAvatar(nome){ var h = 0; nome = String(nome || ''); for (var i = 0; i < nome.length; i++) h = (h * 31 + nome.charCodeAt(i)) >>> 0; return AVATAR_CORES[h % AVATAR_CORES.length]; }
+// iniciais por baixo; a foto (se existir) cobre; se falhar ao carregar, some e as iniciais aparecem
+function avatarPessoa(p){
+  var foto = p.avatar_url ? '<img src="' + esc(p.avatar_url) + '" alt="" style="position:absolute;inset:0" onerror="this.remove()">' : '';
+  return '<span class="avatar" style="background:' + corAvatar(p.nome) + ';position:relative">' + esc(iniciais(p.nome)) + foto + '</span>';
+}
+function nomeColab(id){ return id && S.mapColab[id] ? S.mapColab[id].nome : '—'; }
+function nomeFilialColab(id){ return S.mapFilial[id] || '—'; }
+
+async function carregarColaboradores(){
+  S.colab = await consulta(function(){ return sb.rpc('colaboradores'); }) || [];
+  S.mapColab = {}; S.colab.forEach(function(p){ S.mapColab[p.id] = p; });
+  S.docCont = {};
+  if (podeEditar()) {
+    var docs = await consulta(function(){ return sb.from('documentos').select('pessoa_id').is('excluido_em', null).limit(20000); }) || [];
+    docs.forEach(function(d){ S.docCont[d.pessoa_id] = (S.docCont[d.pessoa_id] || 0) + 1; });
+  }
+}
+
+/* ---- filtros ---- */
+function montarFiltrosColab(){
+  var ativos = S.colab.filter(function(p){ return !p.inativo; });
+  var fil = {}, areas = {}, ger = {};
+  S.colab.forEach(function(p){ if (p.filial_id) fil[p.filial_id] = 1; if (areaChave(p)) areas[areaChave(p)] = 1; if (p.gestor_imediato_id) ger[p.gestor_imediato_id] = 1; });
+  var optFil = S.filiais.filter(function(f){ return fil[f.id]; }).map(function(f){ return [f.id, f.nome]; });
+  var optArea = Object.keys(areas).sort().map(function(a){ return [a, capitalizarArea(a)]; });
+  var optGer = Object.keys(ger).filter(function(id){ return S.mapColab[id]; }).map(function(id){ return [id, S.mapColab[id].nome]; }).sort(function(a, b){ return a[1].localeCompare(b[1], 'pt-BR'); });
+  var fo = S.fo, fc = S.fc;
+  document.getElementById('filtros-org').innerHTML =
+    '<select data-f="filial">' + opcoes(optFil, 'Todas as filiais', fo.filial) + '</select>' +
+    '<select data-f="area">' + opcoes(optArea, 'Todas as áreas', fo.area) + '</select>' +
+    '<button class="link-limpar" data-limpar>Limpar</button>' +
+    '<span class="vazio" style="padding:0 0 0 6px">' + ativos.length + ' pessoas ativas</span>';
+  document.getElementById('filtros-colab').innerHTML =
+    '<input class="busca" type="search" placeholder="Buscar nome, matrícula, cargo…" data-f="busca" value="' + esc(fc.busca) + '">' +
+    '<select data-f="status">' + opcoes([['ativos','Só ativos'], ['inativos','Inativos (desligados)'], ['todos','Todos']], '', fc.status).replace('<option value=""></option>', '') + '</select>' +
+    '<select data-f="filial">' + opcoes(optFil, 'Todas as filiais', fc.filial) + '</select>' +
+    '<select data-f="area">' + opcoes(optArea, 'Todas as áreas', fc.area) + '</select>' +
+    '<select data-f="gestor">' + opcoes(optGer, 'Todos os gestores', fc.gestor) + '</select>' +
+    '<button class="link-limpar" data-limpar>Limpar</button>';
+}
+function ligarFiltrosColab(idWrap, alvo, depois){
+  var wrap = document.getElementById(idWrap);
+  wrap.addEventListener('input', function(e){ var f = e.target.dataset.f; if (!f) return; alvo()[f] = e.target.value; depois(); });
+  wrap.addEventListener('click', function(e){
+    if (!e.target.hasAttribute('data-limpar')) return;
+    var o = alvo(); Object.keys(o).forEach(function(k){ o[k] = ''; });
+    if (idWrap === 'filtros-colab') o.status = 'ativos';
+    montarFiltrosColab(); depois();
+  });
+}
+ligarFiltrosColab('filtros-org', function(){ return S.fo; }, function(){ S.orgFoco = null; renderOrg(); });
+ligarFiltrosColab('filtros-colab', function(){ return S.fc; }, function(){ renderColab(); });
+
+/* ---- lista de colaboradores ---- */
+function colabFiltrados(){
+  var f = S.fc, q = f.busca.toLowerCase();
+  return S.colab.filter(function(p){
+    if (f.status === 'ativos' && p.inativo) return false;
+    if (f.status === 'inativos' && !p.inativo) return false;
+    if (f.filial && p.filial_id !== f.filial) return false;
+    if (f.area && areaChave(p) !== f.area) return false;
+    if (f.gestor && p.gestor_imediato_id !== f.gestor) return false;
+    if (q && [p.nome, p.matricula, p.cargo, p.centro_custo].join(' ').toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+}
+function renderColab(){
+  var lista = colabFiltrados();
+  document.getElementById('colab-sub').textContent = lista.length + (lista.length === 1 ? ' pessoa' : ' pessoas') + ' · cadastro mantido no Hub';
+  var comDocs = podeEditar();
+  document.getElementById('t-colab').innerHTML = lista.length
+    ? '<table><thead><tr><th>Colaborador</th><th>Matrícula</th><th>Cargo</th><th>Área</th><th>Filial</th><th>Gestor</th><th>Admissão</th>' + (comDocs ? '<th class="num">Docs</th>' : '') + '</tr></thead><tbody>' +
+      lista.map(function(p){
+        return '<tr data-colab="' + p.id + '"><td><div class="quem">' + avatarPessoa(p) + '<div><div class="q-nome">' + esc(p.nome) + '</div>' +
+          (p.inativo ? '<div class="q-sub">Inativo</div>' : '') + '</div></div></td>' +
+          '<td class="cod">' + esc(p.matricula || '—') + '</td><td>' + esc(capitalizarCargo(p.cargo) || '—') + '</td><td>' + esc(capitalizarArea(p.centro_custo) || '—') + '</td>' +
+          '<td>' + esc(nomeFilialColab(p.filial_id)) + '</td><td>' + esc(nomeColab(p.gestor_imediato_id)) + '</td><td>' + fmtData(p.admissao) + '</td>' +
+          (comDocs ? '<td class="num">' + (S.docCont[p.id] || 0) + '</td>' : '') + '</tr>';
+      }).join('') + '</tbody></table>'
+    : '<div class="vazio" style="padding:28px">Ninguém com esses filtros.</div>';
+}
+document.addEventListener('click', function(e){
+  var tr = e.target.closest('tr[data-colab]'); if (!tr) return;
+  abrirColab(tr.dataset.colab);
+});
+async function exportarColabExcel(){
+  if (typeof XLSX === 'undefined') { toast('O exportador ainda está carregando. Tente de novo em instantes.', true); return; }
+  var lista = colabFiltrados();
+  try { await registrarExportacao('excel', 'colaboradores (' + lista.length + ')', S.fc); }
+  catch (e) { toast('Exportação bloqueada: não foi possível registrar. ' + (e.message || ''), true); return; }
+  var linhas = lista.map(function(p){
+    return { 'Nome': p.nome, 'Matrícula': p.matricula || '', 'Cargo': capitalizarCargo(p.cargo), 'Área': capitalizarArea(p.centro_custo),
+      'Filial': nomeFilialColab(p.filial_id), 'Gestor': p.gestor_imediato_id ? nomeColab(p.gestor_imediato_id) : '',
+      'Admissão': p.admissao ? fmtData(p.admissao) : '', 'Situação': p.inativo ? 'Inativo' : 'Ativo' };
+  });
+  var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(linhas), 'Colaboradores');
+  XLSX.writeFile(wb, 'colaboradores_' + hojeISO() + '.xlsx');
+}
+
+/* ---- organograma (leitura) ---- */
+function orgConstruir(){
+  var ativos = S.colab.filter(function(p){ return !p.inativo; });
+  var porId = {}; ativos.forEach(function(p){ porId[p.id] = p; });
+  var por = { '__raiz__': [] };
+  ativos.forEach(function(p){
+    if (p.gestor_imediato_id && porId[p.gestor_imediato_id]) (por[p.gestor_imediato_id] = por[p.gestor_imediato_id] || []).push(p);
+    else por['__raiz__'].push(p);
+  });
+  Object.keys(por).forEach(function(k){ por[k].sort(function(a, b){ return a.nome.localeCompare(b.nome, 'pt-BR'); }); });
+  return { porId: porId, por: por };
+}
+function renderOrg(){
+  var T = orgConstruir(), por = T.por, porId = T.porId, f = S.fo, filtrando = !!(f.filial || f.area);
+  function bate(p){ return (!f.filial || p.filial_id === f.filial) && (!f.area || areaChave(p) === f.area); }
+  var mDesc = {}, mMatch = {};
+  function desc(p){ if (mDesc[p.id] != null) return mDesc[p.id]; mDesc[p.id] = 0; var t = 0; (por[p.id] || []).forEach(function(c){ t += 1 + desc(c); }); return (mDesc[p.id] = t); }
+  function descMatch(p){ if (mMatch[p.id] != null) return mMatch[p.id]; mMatch[p.id] = 0; var t = 0; (por[p.id] || []).forEach(function(c){ if (bate(c)) t += 1; t += descMatch(c); }); return (mMatch[p.id] = t); }
+  function filhosVis(p){ var fl = por[p.id] || []; return filtrando ? fl.filter(function(c){ return bate(c) || descMatch(c) > 0; }) : fl; }
+  function card(p, o){
+    o = o || {};
+    var temFilhos = filhosVis(p).length > 0;
+    var cls = 'org-node-card' + (o.compacta ? ' org-node-compacta' : '') + (o.atual ? ' org-node-atual' : '') +
+      (temFilhos && o.clicavel ? ' org-node-clicavel' : '') + (filtrando && !o.compacta && bate(p) ? ' org-node-match' : '');
+    var badge = temFilhos && !o.compacta ? '<span class="org-node-badge">' + (filtrando ? descMatch(p) : desc(p)) + '</span>' : '';
+    return '<div class="' + cls + '"' + (temFilhos && o.clicavel ? ' data-foco="' + p.id + '"' : '') + '>' +
+      (o.compacta ? '' : '<button type="button" class="org-node-ver" data-ver="' + p.id + '" title="Ver ficha"><svg><use href="#i-olho"/></svg></button>') +
+      avatarPessoa(p) + '<div class="org-node-info"><div class="nome">' + esc(p.nome) + '</div><div class="cargo">' + esc(capitalizarCargo(p.cargo)) + '</div></div>' + badge + '</div>';
+  }
+  function no(p){
+    var fl = filhosVis(p);
+    return '<li>' + card(p) + (fl.length ? '<ul>' + fl.map(no).join('') + '</ul>' : '') + '</li>';
+  }
+  var tree = document.getElementById('org-tree');
+  var ativos = Object.keys(porId).length;
+  document.getElementById('org-sub').textContent = ativos + ' pessoas ativas · a estrutura é mantida no Hub; aqui é só consulta';
+  var raizes = por['__raiz__'];
+  if (!raizes.length) { tree.innerHTML = '<p class="vazio">Ninguém no topo do organograma (ninguém sem gestor imediato).</p>'; return; }
+  var ord = raizes.slice().sort(function(a, b){ return desc(b) - desc(a); });
+  var principal = ord[0], soltas = ord.slice(1);
+  if (!S.orgFoco || !porId[S.orgFoco]) S.orgFoco = principal.id;
+  // o foco precisa pertencer à árvore principal
+  var chk = porId[S.orgFoco], ok = false;
+  while (chk) { if (chk.id === principal.id) { ok = true; break; } chk = chk.gestor_imediato_id ? porId[chk.gestor_imediato_id] : null; }
+  if (!ok) S.orgFoco = principal.id;
+  var foco = porId[S.orgFoco], anc = [], cur = foco.gestor_imediato_id ? porId[foco.gestor_imediato_id] : null;
+  while (cur) { anc.unshift(cur); cur = cur.gestor_imediato_id ? porId[cur.gestor_imediato_id] : null; }
+  var filhos = filhosVis(foco);
+  var html = '<div class="org-tree-principal">';
+  if (anc.length) html += '<div class="org-breadcrumb">' + anc.map(function(p){ return card(p, { compacta:true, clicavel:true }) + '<div class="org-breadcrumb-line"></div>'; }).join('') + '</div>';
+  html += '<ul class="org-chart"><li>' + card(foco, { atual:true }) +
+    (filhos.length ? '<ul' + (filhos.length > 8 ? ' class="org-chart-grid"' : '') + '>' + filhos.map(function(c){ return '<li>' + card(c, { clicavel:true }) + '</li>'; }).join('') + '</ul>' : '') + '</li></ul>';
+  if (!filhos.length) html += '<p class="vazio" style="margin-top:6px">' + (filtrando ? 'Ninguém com esses filtros por aqui.' : 'Sem subordinados diretos.') + '</p>';
+  html += '</div>';
+  var sv = filtrando ? soltas.filter(function(p){ return bate(p) || descMatch(p) > 0; }) : soltas;
+  if (sv.length) html += '<div class="org-tree-soltos-label">Sem vínculo direto no organograma</div><div class="org-tree-soltos">' + sv.map(function(p){ return '<ul class="org-chart">' + no(p) + '</ul>'; }).join('') + '</div>';
+  tree.innerHTML = html;
+  tree.querySelectorAll('[data-foco]').forEach(function(el){ el.addEventListener('click', function(e){ e.stopPropagation(); S.orgFoco = el.getAttribute('data-foco'); renderOrg(); }); });
+  tree.querySelectorAll('[data-ver]').forEach(function(el){ el.addEventListener('click', function(e){ e.stopPropagation(); abrirColab(el.getAttribute('data-ver')); }); });
+}
+
+/* ---- ficha do colaborador + documentos ---- */
+var NOME_TIPO_DOC = { entrega_uniforme:'Entrega de uniforme', certificado_treinamento:'Certificado de treinamento' };
+function fmtTam(b){ return b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+['modal-colab'].forEach(function(id){
+  var m = document.getElementById(id);
+  m.addEventListener('click', function(e){ if (e.target === m || e.target.closest('[data-fechar]')) fecharModal(id); });
+});
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') fecharModal('modal-colab'); });
+
+async function abrirColab(id){
+  var p = S.mapColab[id]; if (!p) return;
+  S.colabAberto = id;
+  document.getElementById('colab-titulo').textContent = p.nome;
+  var itens = [['Matrícula', p.matricula || '—'], ['Cargo', capitalizarCargo(p.cargo) || '—'], ['Área', capitalizarArea(p.centro_custo) || '—'],
+    ['Filial', nomeFilialColab(p.filial_id)], ['Gestor imediato', nomeColab(p.gestor_imediato_id)], ['Admissão', fmtData(p.admissao)],
+    ['Situação', p.inativo ? 'Inativo (desligado)' : 'Ativo'], ['É gestor', p.gestor ? 'Sim' : 'Não']];
+  document.getElementById('colab-corpo').innerHTML =
+    '<div class="quem" style="margin-bottom:18px">' + avatarPessoa(p) + '<div><div class="q-nome">' + esc(p.nome) + '</div><div class="q-sub">' + esc(capitalizarCargo(p.cargo)) + '</div></div></div>' +
+    '<div class="det-grid">' + itens.map(function(i){ return '<div class="det-item"><div class="d-l">' + esc(i[0]) + '</div><div class="d-v">' + esc(i[1]) + '</div></div>'; }).join('') + '</div>' +
+    '<p class="modal-note">Os dados cadastrais (cargo, área, gestor) são mantidos no Hub.</p>';
+  var wrap = document.getElementById('colab-docs-wrap');
+  wrap.hidden = !podeEditar();
+  document.getElementById('upload-box').hidden = !podeEditar();
+  document.getElementById('up-data').value = hojeISO(); document.getElementById('up-data').max = hojeISO();
+  document.getElementById('up-desc').value = ''; document.getElementById('up-arquivo').value = ''; document.getElementById('up-erro').hidden = true;
+  atualizarRotuloUpload();
+  abrirModal('modal-colab');
+  if (podeEditar()) await carregarDocs(id);
+}
+function atualizarRotuloUpload(){
+  var t = document.getElementById('up-tipo').value;
+  document.getElementById('up-desc-rotulo').textContent = t === 'entrega_uniforme' ? 'Itens entregues' : 'Curso / treinamento';
+  document.getElementById('up-desc').placeholder = t === 'entrega_uniforme' ? 'Ex.: 2 camisas, 2 calças, 1 jaqueta' : 'Ex.: NR-12 — Segurança em máquinas';
+}
+document.getElementById('up-tipo').addEventListener('change', atualizarRotuloUpload);
+
+async function carregarDocs(pessoaId){
+  var lista = document.getElementById('doc-lista');
+  lista.innerHTML = '<div class="vazio">Carregando…</div>';
+  try {
+    var docs = await consulta(function(){ return sb.from('documentos').select('*').eq('pessoa_id', pessoaId).is('excluido_em', null).order('data_documento', { ascending:false }).order('enviado_em', { ascending:false }); }) || [];
+    S.docsAtuais = docs; S.docCont[pessoaId] = docs.length;
+    lista.innerHTML = docs.length ? docs.map(function(d){
+      return '<div class="doc-item"><div class="doc-info"><div class="doc-tit">' + esc(NOME_TIPO_DOC[d.tipo]) + ' · ' + fmtData(d.data_documento) + '</div>' +
+        '<div class="doc-sub">' + esc((d.descricao ? d.descricao + ' · ' : '') + d.arquivo_nome + ' · ' + fmtTam(d.tamanho_bytes)) + '</div></div>' +
+        '<button class="btn btn-ghost" data-abrir-doc="' + d.id + '"><svg><use href="#i-olho"/></svg>Abrir</button>' +
+        (S.nivel === 'admin' ? '<button class="btn btn-danger" data-excluir-doc="' + d.id + '">Excluir</button>' : '') + '</div>';
+    }).join('') : '<div class="vazio">Nenhum documento enviado.</div>';
+    lista.querySelectorAll('[data-abrir-doc]').forEach(function(b){ b.addEventListener('click', function(){ abrirDocumento(b.getAttribute('data-abrir-doc')); }); });
+    lista.querySelectorAll('[data-excluir-doc]').forEach(function(b){ b.addEventListener('click', function(){ excluirDocumento(b.getAttribute('data-excluir-doc')); }); });
+    renderColab();
+  } catch (e) {
+    console.error(e);
+    lista.innerHTML = '<div class="vazio">Não foi possível carregar os documentos: ' + esc(e.message || e) + '</div>';
+  }
+}
+
+async function abrirDocumento(id){
+  var d = S.docsAtuais.find(function(x){ return x.id === id; }); if (!d) return;
+  var w = window.open('', '_blank'); // abre já: depois de um await o navegador bloquearia como pop-up
+  try {
+    // o acesso é registrado ANTES de liberar o arquivo; se o registro falhar, nada abre
+    await consulta(function(){ return sb.from('documentos_acessos').insert({ documento_id: id, acao: 'abrir' }); });
+    var r = await sb.storage.from('rh-documentos').createSignedUrl(d.arquivo_path, 60);
+    if (r.error) throw r.error;
+    if (w) { w.opener = null; w.location = r.data.signedUrl; }
+    else toast('O navegador bloqueou a nova aba. Libere pop-ups para este site e tente de novo.', true);
+  } catch (e) {
+    if (w) w.close();
+    toast('Não foi possível abrir o documento: ' + (e.message || e), true);
+  }
+}
+async function excluirDocumento(id){
+  if (S.nivel !== 'admin') return;
+  if (!window.confirm('Excluir este documento? Ele deixa de aparecer, mas o arquivo e o registro são preservados para auditoria.')) return;
+  try {
+    var u = (await sb.auth.getUser()).data.user;
+    await consulta(function(){ return sb.from('documentos').update({ excluido_em: new Date().toISOString(), excluido_por: u.id }).eq('id', id).select('id'); });
+    toast('Documento excluído.');
+    await carregarDocs(S.colabAberto);
+  } catch (e) { toast('Não foi possível excluir: ' + (e.message || e), true); }
+}
+async function sha256Hex(buf){
+  var h = await crypto.subtle.digest('SHA-256', buf);
+  return Array.prototype.map.call(new Uint8Array(h), function(b){ return b.toString(16).padStart(2, '0'); }).join('');
+}
+document.getElementById('up-enviar').addEventListener('click', async function(){
+  var erro = document.getElementById('up-erro');
+  function falha(m){ erro.textContent = m; erro.hidden = false; }
+  erro.hidden = true;
+  if (!podeEditar() || !S.colabAberto) return;
+  var arq = document.getElementById('up-arquivo').files[0];
+  var tipo = document.getElementById('up-tipo').value, data = document.getElementById('up-data').value;
+  var desc = document.getElementById('up-desc').value.trim();
+  if (!data) return falha('Informe a data do documento.');
+  if (data > hojeISO()) return falha('A data do documento não pode estar no futuro.');
+  if (!arq) return falha('Escolha o arquivo PDF.');
+  if (arq.size > 5 * 1024 * 1024) return falha('O arquivo tem ' + fmtTam(arq.size) + '. O limite é 5 MB — digitalize em resolução menor.');
+  if (arq.size < 100) return falha('O arquivo está vazio ou corrompido.');
+  var buf = await arq.arrayBuffer();
+  if (String.fromCharCode.apply(null, new Uint8Array(buf.slice(0, 5))) !== '%PDF-') return falha('Esse arquivo não é um PDF válido.');
+  var bt = this; bt.disabled = true; bt.textContent = 'Enviando…';
+  try {
+    var hash = await sha256Hex(buf);
+    var caminho = S.colabAberto + '/' + crypto.randomUUID() + '.pdf';
+    var up = await sb.storage.from('rh-documentos').upload(caminho, new Blob([buf], { type:'application/pdf' }), { contentType:'application/pdf', upsert:false });
+    if (up.error) throw up.error;
+    await consulta(function(){ return sb.from('documentos').insert({
+      pessoa_id: S.colabAberto, tipo: tipo, data_documento: data, descricao: desc || null,
+      arquivo_path: caminho, arquivo_nome: arq.name.slice(0, 200), tamanho_bytes: arq.size, sha256: hash }); });
+    document.getElementById('up-arquivo').value = ''; document.getElementById('up-desc').value = '';
+    toast('Documento enviado.');
+    await carregarDocs(S.colabAberto);
+  } catch (e) {
+    console.error(e);
+    falha('Não foi possível enviar: ' + (e.message || e));
+  } finally { bt.disabled = false; bt.textContent = 'Enviar'; }
+});
 
 iniciar();
 </script>
