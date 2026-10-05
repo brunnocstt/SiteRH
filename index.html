@@ -432,7 +432,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 'use strict';
 /* ================== configuração ================== */
 var SUPABASE_URL = 'https://iueakatarwkvaoomhhah.supabase.co';
-var SUPABASE_ANON_KEY = 'COLE_AQUI_A_ANON_KEY_DO_PROJETO_PRINCIPAL';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1ZWFrYXRhcndrdmFvb21oaGFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyODI1MjgsImV4cCI6MjEwMzg1ODUyOH0.OVP8GF0pTrpdTFk17vozLyybEGt_csCJzGJDMTcjALY';
 var HUB_URL = 'https://deva.albusdata.com.br';
 
 /* ================== sessão compartilhada (auth-integration.md) ================== */
@@ -875,7 +875,7 @@ function abrirFormVaga(v){
   if (!podeEditar()) return;
   vagaEditando = v || null;
   document.getElementById('form-titulo').textContent = v ? 'Editar ' + codVaga(v.id) : 'Nova vaga';
-  form.filial_id.innerHTML = opcoes(S.filiais.map(function(f){ return [f.id, f.nome]; }), 'Selecione…', v ? v.filial_id : '');
+  form.filial_id.innerHTML = opcoes(S.filiais.filter(function(f){ return f.ativo !== false || (v && v.filial_id === f.id); }).map(function(f){ return [f.id, f.nome]; }), 'Selecione…', v ? v.filial_id : '');
   var gest = S.gestores.map(function(g){ return [g.id, g.nome]; });
   if (v && v.gestor_id && !S.mapGestor[v.gestor_id]) gest.push([v.gestor_id, 'Gestor inativo']);
   form.gestor_id.innerHTML = opcoes(gest, 'Não informado', v ? v.gestor_id : '');

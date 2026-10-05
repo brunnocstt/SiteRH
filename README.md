@@ -15,7 +15,6 @@ App de RH do Portal Estratégia de Negócio (Deva/IVECO). Segue a skill `albusda
 
 1. Rodar `supabase/migrations/001_rh_recrutamento.sql` no SQL Editor do projeto principal.
 2. Settings → API → **Exposed schemas**: incluir `rh`.
-3. Em `index.html`, preencher `SUPABASE_ANON_KEY` (a mesma anon/publishable do Hub).
-4. Dar acesso em `public.acessos_app` (ex.: Patricia `admin`, Marcos `editor`).
-5. Hub: card do app em `APPS`, `rh` em `APPS_GENERICOS`/`APP_NIVEIS`, `APP_INFO` do e-mail de acesso e linha em `apps_catalogo`.
-6. GitHub Pages + subdomínio (ex.: `rh.albusdata.com.br`), necessário para o cookie de sessão compartilhado.
+3. Dar acesso em `public.acessos_app` (ex.: Patricia `admin`, Marcos `editor`).
+4. Hub: card do app em `APPS`, `rh` em `APPS_GENERICOS`/`APP_NIVEIS`, `APP_INFO` do e-mail de acesso e linha em `apps_catalogo`.
+5. GitHub Pages (Settings → Pages → branch `main`) com o domínio `gestaorhdeva.albusdata.com.br` (arquivo `CNAME`) e um registro DNS CNAME `gestaorhdeva` → `brunnocstt.github.io`. Precisa ser subdomínio de `albusdata.com.br` para enxergar o cookie de sessão do Hub.

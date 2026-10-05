@@ -3,9 +3,9 @@
 -- Projeto principal (iueakatarwkvaoomhhah), schema próprio "rh".
 --
 -- Antes de rodar:
---   1. Conferir os tipos de public.pessoas.id e public.filiais.id
---      (este arquivo assume uuid nos dois).
---   2. Depois de rodar: Settings → API → Exposed schemas → incluir "rh".
+--   Tipos conferidos em 2026-10-05: pessoas.id, filiais.id, contas.id/pessoa_id
+--   e acessos_app.pessoa_id são uuid; filiais.codigo é text.
+--   Depois de rodar: Settings → API → Exposed schemas → incluir "rh".
 --
 -- Identidade (skill albusdata): nenhuma tabela de usuários aqui.
 -- Quem é a pessoa vem de public.contas/pessoas; o que ela pode vem de
@@ -244,10 +244,10 @@ as $$
 $$;
 
 create or replace function rh.filiais()
-returns table (id uuid, codigo text, nome text)
+returns table (id uuid, codigo text, nome text, ativo boolean)
 language sql stable security definer set search_path = ''
 as $$
-  select f.id, f.codigo::text, f.nome from public.filiais f
+  select f.id, f.codigo, f.nome, coalesce(f.ativo, true) from public.filiais f
   where rh.pode_ler()
   order by f.nome
 $$;
