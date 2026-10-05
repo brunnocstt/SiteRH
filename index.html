@@ -2239,49 +2239,101 @@ document.getElementById('t-uni').addEventListener('click', function(ev){
 function entregaPorId(id){ return S.entregas.find(function(e){ return String(e.id) === String(id); }); }
 
 /* ---- PDF do termo (jsPDF) ---- */
-function gerarTermoPdf(e){
+function logoPng(cor){
+  return new Promise(function(resolve){
+    var fim = setTimeout(function(){ resolve(null); }, 1500);
+    try {
+      var sym = document.getElementById('i-logo-ivecodeva');
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 183 15" width="915" height="75" fill="' + cor + '" style="color:' + cor + '">' + sym.innerHTML + '</svg>';
+      var img = new Image();
+      img.onload = function(){
+        try { var c = document.createElement('canvas'); c.width = 915; c.height = 75; c.getContext('2d').drawImage(img, 0, 0, 915, 75); clearTimeout(fim); resolve(c.toDataURL('image/png')); }
+        catch (e) { clearTimeout(fim); resolve(null); }
+      };
+      img.onerror = function(){ clearTimeout(fim); resolve(null); };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    } catch (e) { clearTimeout(fim); resolve(null); }
+  });
+}
+var MESES_EXT = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+function itensDaEntrega(e){ // [{nome, qtd}] — vazio nas entregas antigas (só texto livre)
+  var l = [];
+  if (e.qtd_camisas) l.push({ s:'camisa', p:'camisas', qtd:e.qtd_camisas });
+  if (e.qtd_calcas) l.push({ s:'calça', p:'calças', qtd:e.qtd_calcas });
+  if (e.qtd_blusas) l.push({ s:'blusa de frio', p:'blusas de frio', qtd:e.qtd_blusas });
+  return l;
+}
+function textoItens(e){
+  var l = itensDaEntrega(e).map(function(i){ return i.qtd + ' ' + (i.qtd === 1 ? i.s : i.p); });
+  if (!l.length) return e.itens || '';
+  return l.length === 1 ? l[0] : l.slice(0, -1).join(', ') + ' e ' + l[l.length - 1];
+}
+async function gerarTermoPdf(e){
   if (!e) return;
   if (!window.jspdf || !window.jspdf.jsPDF) { toast('O gerador de PDF ainda está carregando. Tente de novo em instantes.', true); return; }
   var p = S.mapColab[e.pessoa_id] || {};
+  var AZUL = [25, 85, 255], TINTA = [24, 28, 45], CINZA = [110, 116, 135];
+  var logo = await logoPng('#1955FF');
   var doc = new window.jspdf.jsPDF({ unit:'mm', format:'a4' });
-  var L = 20, R = 190, y = 24;
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(90);
-  doc.text('DEVA · GESTÃO DE RH', L, y);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-  doc.text(codEntrega(e.id), R, y, { align:'right' });
-  y += 12;
-  doc.setTextColor(20); doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
-  doc.text('Termo de entrega de uniforme', L, y);
-  y += 4; doc.setDrawColor(200); doc.line(L, y, R, y);
-  y += 12;
-  var campos = [['Nome completo', p.nome || '—'], ['Matrícula', p.matricula || '—'], ['Filial', nomeFilialColab(p.filial_id)], ['Data da entrega', fmtData(e.data_entrega)], ['Quantidade entregue', String(e.quantidade) + (e.quantidade === 1 ? ' peça' : ' peças')]];
-  if (e.itens) campos.push(['Itens', e.itens]);
-  campos.forEach(function(c){
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(110);
-    doc.text(c[0].toUpperCase(), L, y);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(12); doc.setTextColor(20);
-    var linhas = doc.splitTextToSize(c[1], R - L - 52);
-    doc.text(linhas, L + 52, y);
-    y += Math.max(9, linhas.length * 6 + 3);
+  var L = 22, R = 188, W = R - L;
+
+  // faixa azul no topo + logo
+  doc.setFillColor(AZUL[0], AZUL[1], AZUL[2]); doc.rect(0, 0, 210, 5, 'F');
+  if (logo) doc.addImage(logo, 'PNG', L, 17, 62, 62 * 15 / 183);
+  else { doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(AZUL[0], AZUL[1], AZUL[2]); doc.text('DEVA', L, 22); }
+  doc.setDrawColor(AZUL[0], AZUL[1], AZUL[2]); doc.setLineWidth(0.6); doc.line(L, 29, R, 29);
+
+  // título
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(AZUL[0], AZUL[1], AZUL[2]);
+  doc.text('TERMO DE ENTREGA DE UNIFORME', 105, 46, { align:'center', charSpace:0.5 });
+
+  // declaração
+  var d = new Date(e.data_entrega + 'T12:00:00');
+  var dataExt = fmtData(e.data_entrega) + ', ' + d.toLocaleDateString('pt-BR', { weekday:'long' });
+  var itens = textoItens(e);
+  var decl = 'Eu, ' + (p.nome || '—') + ', matrícula ' + (p.matricula || '—') + ', lotado(a) na filial ' + nomeFilialColab(p.filial_id) +
+    ', declaro ter recebido no dia ' + dataExt + ', ' + e.quantidade + (e.quantidade === 1 ? ' unidade' : ' unidades') + ' do uniforme da Deva' + (itens ? ', contendo ' + itens : '') +
+    ', em bom estado de conservação. Comprometo-me a utilizá-los exclusivamente durante o exercício das minhas atividades, a zelar pela sua conservação e a comunicar ao Departamento de Recursos Humanos qualquer perda, dano ou necessidade de reposição, bem como a devolvê-los, nas condições em que se encontrarem, em caso de encerramento do contrato de trabalho ou de término das minhas atividades junto à empresa.';
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(11.5); doc.setTextColor(TINTA[0], TINTA[1], TINTA[2]);
+  var y = 64, lh = 11.5 * 0.3528 * 1.65;
+  var linhas = doc.splitTextToSize(decl, W);
+  doc.text(decl, L, y, { maxWidth:W, align:'justify', lineHeightFactor:1.65 });
+  y += linhas.length * lh + 8;
+
+  // quadro de itens
+  var linhasQ = itensDaEntrega(e).map(function(i){ return [i.qtd === 1 ? i.s.charAt(0).toUpperCase() + i.s.slice(1) : i.p.charAt(0).toUpperCase() + i.p.slice(1), String(i.qtd)]; });
+  if (!linhasQ.length) linhasQ = [[e.itens || 'Uniforme', String(e.quantidade)]];
+  doc.setFillColor(AZUL[0], AZUL[1], AZUL[2]); doc.rect(L, y, W, 8, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(255, 255, 255);
+  doc.text('DISCRIMINAÇÃO DOS ITENS', L + 4, y + 5.4); doc.text('QUANTIDADE', R - 4, y + 5.4, { align:'right' });
+  y += 8;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(TINTA[0], TINTA[1], TINTA[2]); doc.setDrawColor(200, 205, 220); doc.setLineWidth(0.25);
+  linhasQ.forEach(function(r){
+    doc.text(r[0], L + 4, y + 6); doc.text(r[1], R - 4, y + 6, { align:'right' });
+    y += 9; doc.line(L, y, R, y);
   });
-  y += 6; doc.setDrawColor(200); doc.line(L, y, R, y); y += 10;
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(40);
-  var decl = 'Declaro ter recebido, nesta data, os uniformes descritos acima, em bom estado de conservação. Comprometo-me a utilizá-los durante o exercício das minhas atividades, zelar pela sua conservação e comunicar ao RH qualquer perda, dano ou necessidade de reposição.';
-  var ld = doc.splitTextToSize(decl, R - L);
-  doc.text(ld, L, y, { lineHeightFactor:1.5 });
-  y += ld.length * 7 + 36;
-  doc.setDrawColor(60);
-  doc.line(L, y, 92, y); doc.line(118, y, R, y);
-  doc.setFontSize(9); doc.setTextColor(90);
-  doc.text('Assinatura do colaborador', L, y + 5);
-  doc.text('Responsável pelo RH', 118, y + 5);
-  doc.setTextColor(20); doc.setFontSize(10);
-  doc.text(p.nome || '', L, y + 11);
-  y += 24;
-  doc.setTextColor(90); doc.setFontSize(10);
-  doc.text('Data da assinatura:  ____ / ____ / ________', L, y);
-  doc.setFontSize(8); doc.setTextColor(140);
-  doc.text('Documento ' + codEntrega(e.id) + ' · emitido em ' + fmtDataHora(e.gerada_em) + '. Imprima, colha a assinatura e anexe a versão digitalizada no sistema.', L, 285);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Total de unidades', L + 4, y + 6.5); doc.text(String(e.quantidade), R - 4, y + 6.5, { align:'right' });
+  doc.setDrawColor(AZUL[0], AZUL[1], AZUL[2]); doc.setLineWidth(0.6); doc.line(L, y + 10, R, y + 10);
+  y += 10 + 22;
+
+  // local e data
+  var cidade = nomeFilialColab(p.filial_id);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(11.5); doc.setTextColor(TINTA[0], TINTA[1], TINTA[2]);
+  doc.text(cidade + ', ______ de ' + MESES_EXT[d.getMonth()] + ' de ' + d.getFullYear() + '.', L, y);
+  y += 34;
+
+  // assinatura
+  doc.setDrawColor(TINTA[0], TINTA[1], TINTA[2]); doc.setLineWidth(0.35); doc.line(52, y, 158, y);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text(p.nome || '', 105, y + 6, { align:'center' });
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(CINZA[0], CINZA[1], CINZA[2]);
+  doc.text('Assinatura do colaborador · Matrícula ' + (p.matricula || '—'), 105, y + 11.5, { align:'center' });
+
+  // rodapé
+  doc.setDrawColor(200, 205, 220); doc.setLineWidth(0.25); doc.line(L, 281, R, 281);
+  doc.setFontSize(8); doc.setTextColor(CINZA[0], CINZA[1], CINZA[2]);
+  doc.text('Documento ' + codEntrega(e.id) + ' · emitido em ' + fmtDataHora(e.gerada_em) + ' · Gestão de RH Deva', L, 286);
+  doc.text('Imprima, colha a assinatura e anexe a versão digitalizada no sistema.', L, 290);
   doc.save('termo-uniforme-' + codEntrega(e.id) + '.pdf');
 }
 
@@ -2290,25 +2342,32 @@ function abrirNovaEntrega(){
   if (!podeEditar()) return;
   var ativos = S.colab.filter(function(p){ return !p.inativo; }).sort(function(a, b){ return a.nome.localeCompare(b.nome, 'pt-BR'); });
   var rot = function(p){ return p.nome + ' — ' + (p.matricula || 'sem matrícula'); };
+  var num = ' min="0" max="99" inputmode="numeric"';
   var corpo = '<div class="form-grid">' +
     '<label class="campo full"><span>Colaborador</span><input data-k="colab" type="text" list="dl-colab" placeholder="Digite o nome ou a matrícula" autocomplete="off"></label>' +
     '<datalist id="dl-colab">' + ativos.map(function(p){ return '<option value="' + esc(rot(p)) + '"></option>'; }).join('') + '</datalist>' +
-    campoG('data', 'Data da entrega', 'date', hojeISO(), { attrs:' max="' + hojeISO() + '"' }) +
-    campoG('qtd', 'Quantidade de peças', 'number', '2', { attrs:' min="1" max="99"' }) +
-    campoG('itens', 'Itens (opcional)', 'text', '', { full:true, attrs:' placeholder="Ex.: 2 camisas, 2 calças, 1 jaqueta" maxlength="500"' }) + '</div>' +
-    '<p class="modal-note">Ao salvar, o termo em PDF é baixado para impressão. Depois da assinatura, anexe o documento digitalizado nesta tela.</p>';
+    campoG('data', 'Data da entrega', 'date', hojeISO(), { attrs:' max="' + hojeISO() + '"', full:true }) +
+    campoG('camisas', 'Camisas', 'number', '2', { attrs:num }) +
+    campoG('calcas', 'Calças', 'number', '0', { attrs:num }) +
+    campoG('blusas', 'Blusas de frio', 'number', '0', { attrs:num }) +
+    '</div><p class="modal-note">Informe quantas peças de cada tipo foram entregues. Ao salvar, o termo em PDF é baixado para impressão; depois da assinatura, anexe o documento digitalizado nesta tela.</p>';
   abrirG({ titulo:'Nova entrega de uniforme', corpo:corpo, textoSalvar:'Salvar e baixar termo', aoSalvar:async function(){
     var txt = gv('colab'), p = ativos.find(function(x){ return rot(x) === txt; });
     if (!p) { var q = txt.toLowerCase(); var achados = ativos.filter(function(x){ return q && (x.nome.toLowerCase() === q || x.matricula === txt); }); if (achados.length === 1) p = achados[0]; }
     if (!p) gErro('Escolha um colaborador da lista.');
-    var data = gv('data'), qtd = parseInt(gv('qtd'), 10);
+    var data = gv('data');
+    var c = parseInt(gv('camisas'), 10) || 0, k = parseInt(gv('calcas'), 10) || 0, b = parseInt(gv('blusas'), 10) || 0;
     if (!data) gErro('Informe a data da entrega.');
     if (data > hojeISO()) gErro('A data da entrega não pode estar no futuro.');
-    if (!(qtd >= 1 && qtd <= 99)) gErro('A quantidade deve ficar entre 1 e 99.');
-    var nova = await consulta(function(){ return sb.from('entregas_uniforme').insert({ pessoa_id:p.id, data_entrega:data, quantidade:qtd, itens:gv('itens') || null }).select('*').single(); });
+    if ([c, k, b].some(function(x){ return x < 0 || x > 99; })) gErro('Cada quantidade deve ficar entre 0 e 99.');
+    var total = c + k + b;
+    if (total < 1) gErro('Informe ao menos uma peça entregue.');
+    var reg = { pessoa_id:p.id, data_entrega:data, quantidade:total, qtd_camisas:c, qtd_calcas:k, qtd_blusas:b };
+    reg.itens = textoItens(reg);
+    var nova = await consulta(function(){ return sb.from('entregas_uniforme').insert(reg).select('*').single(); });
     S.entregas.unshift(nova); montarFiltrosUni(); renderUniformes();
     toast('Entrega registrada. Baixando o termo…');
-    gerarTermoPdf(nova);
+    await gerarTermoPdf(nova);
   } });
 }
 
