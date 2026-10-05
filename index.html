@@ -2171,7 +2171,8 @@ function resolverLinha(l){ // etapa final + comparação com o que já existe no
   var f = S.filiais.find(function(x){ return String(x.codigo) === String(l.filial_codigo); });
   o.filial_id = f ? f.id : null;
   var v = S.vagas.find(function(x){ return String(x.processo) === String(l.processo); });
-  if (!v) o.situacaoImp = 'nova';
+  if (!f) o.situacaoImp = 'ignorada'; // só entram processos de filiais cadastradas
+  else if (!v) o.situacaoImp = 'nova';
   else {
     var st = l.status === 'aberta' ? o.etapa : (l.status === 'encerrada' ? 'encerrada' : 'cancelada');
     var igual = v.status === st && v.quantidade === (l.quantidade || 1) && v.cargo === (l.cargo || '(não informado)') && (v.cargo_origem || null) === (l.cargo_origem || null) &&
@@ -2185,21 +2186,22 @@ function renderPrevImportacao(){
   var el = document.getElementById('imp-prev'); if (!el) return;
   var im = S.imp;
   if (!im || !im.linhas.length) { el.innerHTML = im ? '<div class="aviso-alerta">Nenhum processo reconhecido nesse arquivo. Confira se é a exportação do sistema (colunas “#Processo” e “Tipo de processo”).</div>' : ''; return; }
-  var res = im.linhas.map(resolverLinha), cont = { nova:0, atualizada:0, igual:0 };
+  var res = im.linhas.map(resolverLinha), cont = { nova:0, atualizada:0, igual:0, ignorada:0 };
   res.forEach(function(o){ cont[o.situacaoImp]++; });
   var req = res.filter(function(o){ return o.tipo_processo === 'requisicao'; }).length;
-  var semFilial = res.filter(function(o){ return !o.filial_id; });
+  var semFilial = res.filter(function(o){ return o.situacaoImp === 'ignorada'; });
   var codsSem = {}; semFilial.forEach(function(o){ codsSem[o.filial_codigo || '(vazio)'] = 1; });
-  var atvNovas = {}; im.linhas.forEach(function(l){ if (l.status === 'aberta' && l.atividade && !S.ativEtapa[l.atividade]) atvNovas[l.atividade] = 1; });
+  var atvNovas = {}; res.forEach(function(l){ if (l.situacaoImp !== 'ignorada' && l.status === 'aberta' && l.atividade && !S.ativEtapa[l.atividade]) atvNovas[l.atividade] = 1; });
   var estranhos = {}; im.linhas.forEach(function(l){ if (l.status_estranho) estranhos[l.status_estranho] = 1; });
-  var semEnc = im.linhas.filter(function(l){ return l.status === 'encerrada' && !l.encerramento; }).length;
-  var presentes = {}; im.linhas.forEach(function(l){ presentes[l.processo] = 1; });
+  var semEnc = res.filter(function(l){ return l.situacaoImp !== 'ignorada' && l.status === 'encerrada' && !l.encerramento; }).length;
+  var presentes = {}; res.forEach(function(l){ if (l.situacaoImp !== 'ignorada') presentes[l.processo] = 1; });
   var ausentes = S.vagas.filter(function(v){ return v.processo && estaAberta(v) && !presentes[v.processo]; }).length;
   var html = '<div class="imp-cards">' +
     '<div class="imp-card"><b>' + res.length + '</b><span>processos lidos<br>' + req + ' contratação · ' + (res.length - req) + ' movimentação</span></div>' +
     '<div class="imp-card ok"><b>' + cont.nova + '</b><span>novos</span></div>' +
     '<div class="imp-card azul"><b>' + cont.atualizada + '</b><span>com alteração</span></div>' +
-    '<div class="imp-card"><b>' + cont.igual + '</b><span>sem alteração</span></div></div>';
+    '<div class="imp-card"><b>' + cont.igual + '</b><span>sem alteração</span></div>' +
+    (cont.ignorada ? '<div class="imp-card"><b>' + cont.ignorada + '</b><span>desconsiderados</span></div>' : '') + '</div>';
   var nomesAtv = Object.keys(atvNovas);
   if (nomesAtv.length) {
     html += '<div class="sec-tit">Atividades novas — em que etapa do funil entram?</div>' + nomesAtv.map(function(a){
@@ -2208,7 +2210,7 @@ function renderPrevImportacao(){
     }).join('') + '<p class="modal-note">A escolha fica salva e vale para as próximas importações (dá para ajustar em Configurações).</p>';
   }
   var av = [];
-  if (semFilial.length) av.push(semFilial.length + ' processo(s) sem filial reconhecida (código: ' + Object.keys(codsSem).join(', ') + '). Entram no site sem filial.');
+  if (semFilial.length) av.push(semFilial.length + ' processo(s) desconsiderado(s) por não pertencerem a uma filial cadastrada (código: ' + Object.keys(codsSem).join(', ') + ').');
   if (semEnc) av.push(semEnc + ' processo(s) finalizado(s) sem data de encerramento na planilha: vale a data de hoje. Se o sistema de origem puder exportar a data de conclusão, o cálculo de SLA fica exato.');
   if (Object.keys(estranhos).length) av.push('Status não reconhecido tratado como “em andamento”: ' + Object.keys(estranhos).join(', ') + '.');
   if (ausentes) av.push(ausentes + ' vaga(s) importada(s) antes e ainda abertas no site não aparecem nesta planilha. Nada é alterado nelas; se foram concluídas, ajuste manualmente.');
@@ -2225,8 +2227,9 @@ function abrirImportacao(){
       '<label class="campo full"><span>Arquivo(s) .xlsx</span><input id="imp-arq" type="file" multiple accept=".xlsx,.xls"></label><div id="imp-prev" style="margin-top:14px"></div>',
     textoSalvar:'Importar', aoSalvar:async function(){
       if (!S.imp || !S.imp.linhas.length) gErro('Escolha um arquivo com processos reconhecidos.');
-      var res = S.imp.linhas.map(resolverLinha);
-      var novas = Object.keys(S.imp.escolhas).filter(function(a){ return !S.ativEtapa[a]; }).map(function(a){ return { atividade:a, etapa:S.imp.escolhas[a] }; });
+      var res = S.imp.linhas.map(resolverLinha).filter(function(o){ return o.situacaoImp !== 'ignorada'; });
+      if (!res.length) gErro('Nenhum processo de filial cadastrada neste arquivo.');
+      var novas = Object.keys(S.imp.escolhas).filter(function(a){ return !S.ativEtapa[a] && res.some(function(o){ return o.atividade === a; }); }).map(function(a){ return { atividade:a, etapa:S.imp.escolhas[a] }; });
       if (novas.length) {
         await consulta(function(){ return sb.from('atividade_etapa').upsert(novas); });
         novas.forEach(function(n){ S.ativEtapa[n.atividade] = n.etapa; });
@@ -2235,7 +2238,7 @@ function abrirImportacao(){
         atividade:o.atividade, quantidade:o.quantidade, cargo:o.cargo, cargo_origem:o.cargo_origem, filial_codigo:o.filial_codigo, orcado:o.orcado, vigencia:o.vigencia, encerramento:o.encerramento }; });
       var r = await consulta(function(){ return sb.rpc('importar_processos', { p_linhas: linhas, p_arquivos: S.imp.nomes.join(', ') }); });
       await recarregarVagas(); montarFiltros(); render();
-      toast('Importação concluída: ' + r.novas + ' nova(s), ' + r.atualizadas + ' atualizada(s), ' + r.iguais + ' sem alteração.');
+      toast('Importação concluída: ' + r.novas + ' nova(s), ' + r.atualizadas + ' atualizada(s), ' + r.iguais + ' sem alteração.' + (r.sem_filial ? ' ' + r.sem_filial + ' desconsiderada(s) por filial não cadastrada.' : ''));
     } });
   document.getElementById('imp-arq').addEventListener('change', async function(){
     var files = [].slice.call(this.files); if (!files.length) return;
