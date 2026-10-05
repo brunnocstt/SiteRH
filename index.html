@@ -329,6 +329,12 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 .aviso-cap{ background:var(--warn-soft); color:var(--warn); border-radius:12px; padding:8px 12px; font-size:.8rem; font-weight:600; margin-bottom:10px; }
 @media (max-width:560px){ .part-linha{ grid-template-columns:1fr 1fr; } }
 
+/* alternância de visão (painel/lista, lista/organograma) */
+.seg{ display:inline-flex; background:var(--surface-2); border-radius:999px; padding:3px; gap:2px; }
+.seg a{ padding:6px 16px; border-radius:999px; font-size:.8rem; font-weight:700; color:var(--ink-soft); text-decoration:none; transition:background .15s, color .15s; }
+.seg a:hover{ color:var(--ink); }
+.seg a.ativa{ background:var(--accent); color:#fff; }
+.head-actions{ align-items:center; }
 /* gráfico mensal */
 .mes-topo{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
 .mes-topo label{ display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--muted); }
@@ -437,12 +443,10 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
       </div>
     </div>
     <nav class="s-nav" id="s-nav">
-      <a class="s-link active" data-page="painel" href="#painel"><span class="ico"><svg width="17" height="17"><use href="#i-painel"/></svg></span><span class="s-label">Painel de vagas</span></a>
-      <a class="s-link" data-page="vagas" href="#vagas"><span class="ico"><svg width="17" height="17"><use href="#i-vagas"/></svg></span><span class="s-label">Vagas</span></a>
-      <a class="s-link" data-page="colaboradores" href="#colaboradores"><span class="ico"><svg width="17" height="17"><use href="#i-pessoas"/></svg></span><span class="s-label">Colaboradores</span></a>
+      <a class="s-link active" data-page="painel" data-also="vagas" href="#painel"><span class="ico"><svg width="17" height="17"><use href="#i-painel"/></svg></span><span class="s-label">Vagas</span></a>
+      <a class="s-link" data-page="colaboradores" data-also="organograma" href="#colaboradores"><span class="ico"><svg width="17" height="17"><use href="#i-pessoas"/></svg></span><span class="s-label">Colaboradores</span></a>
       <a class="s-link" data-page="treinamentos" href="#treinamentos"><span class="ico"><svg width="17" height="17"><use href="#i-livro"/></svg></span><span class="s-label">Treinamentos</span></a>
       <a class="s-link" data-page="uniformes" href="#uniformes"><span class="ico"><svg width="17" height="17"><use href="#i-uniforme"/></svg></span><span class="s-label">Uniformes</span></a>
-      <a class="s-link" data-page="organograma" href="#organograma"><span class="ico"><svg width="17" height="17"><use href="#i-org"/></svg></span><span class="s-label">Organograma</span></a>
       <a class="s-link" data-page="configuracoes" href="#configuracoes"><span class="ico"><svg width="17" height="17"><use href="#i-config"/></svg></span><span class="s-label">Configurações</span></a>
     </nav>
     <div class="s-foot">
@@ -473,6 +477,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
           <p id="painel-sub">Recrutamento e Seleção</p>
         </div>
         <div class="head-actions">
+          <div class="seg" role="tablist"><a href="#painel" data-seg="painel">Painel</a><a href="#vagas" data-seg="vagas">Lista</a></div>
           <button class="btn btn-ghost" onclick="exportarPdf('painel')"><svg><use href="#i-pdf"/></svg>PDF</button>
         </div>
       </div>
@@ -543,6 +548,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
           <p id="vagas-sub"></p>
         </div>
         <div class="head-actions">
+          <div class="seg" role="tablist"><a href="#painel" data-seg="painel">Painel</a><a href="#vagas" data-seg="vagas">Lista</a></div>
           <button class="btn btn-ghost" onclick="exportarExcel()"><svg><use href="#i-excel"/></svg>Excel</button>
           <button class="btn btn-ghost" onclick="exportarPdf('vagas')"><svg><use href="#i-pdf"/></svg>PDF</button>
           <button class="btn btn-primary" id="btn-nova-vaga" hidden onclick="abrirFormVaga()"><svg><use href="#i-mais"/></svg>Nova vaga</button>
@@ -579,6 +585,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
           <h1>Organograma</h1>
           <p id="org-sub">Quem responde a quem. A estrutura é mantida no Hub; aqui é só consulta.</p>
         </div>
+        <div class="head-actions"><div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div></div>
       </div>
       <div class="filtros" id="filtros-org"></div>
       <div class="tabela-wrap"><div class="org-tree" id="org-tree"></div></div>
@@ -592,6 +599,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
           <p id="colab-sub"></p>
         </div>
         <div class="head-actions">
+          <div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div>
           <button class="btn btn-ghost" onclick="exportarColabExcel()"><svg><use href="#i-excel"/></svg>Excel</button>
         </div>
       </div>
@@ -931,7 +939,8 @@ function irPara(pagina){
   if (PAGINAS.indexOf(pagina) < 0) pagina = 'painel';
   if ((pagina === 'uniformes' && !podeEditar()) || (pagina === 'configuracoes' && S.nivel !== 'admin')) pagina = 'painel';
   S.pagina = pagina;
-  document.querySelectorAll('.s-link').forEach(function(a){ a.classList.toggle('active', a.dataset.page === pagina); });
+  document.querySelectorAll('.s-link').forEach(function(a){ a.classList.toggle('active', a.dataset.page === pagina || (a.dataset.also || '').split(' ').indexOf(pagina) >= 0); });
+  document.querySelectorAll('.seg a').forEach(function(a){ a.classList.toggle('ativa', a.dataset.seg === pagina); });
   PAGINAS.forEach(function(pg){ document.getElementById('page-' + pg).hidden = pagina !== pg; });
   render();
   window.scrollTo(0,0);
