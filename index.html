@@ -107,7 +107,7 @@ body.menu-fechado .s-user-name{ display:none; }
 .mobile-bottom-nav-row .s-link .s-label{ display:block !important; opacity:1 !important; animation:none !important; font-size:10px; font-weight:700; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 2px; }
 .mobile-bottom-nav-row .s-link.active{ background:transparent; color:#1955FF; }
 .mobile-nav-safe{ height:max(10px, env(safe-area-inset-bottom)); flex-shrink:0; }
-@media (max-width: 767px), (max-height: 768px) and (orientation: portrait){
+@media (max-width: 1100px), (max-height: 768px) and (orientation: portrait){  /* celular e tablet: menu embaixo */
   .sidebar{ display:none !important; }
   .main{ margin-left:0 !important; padding-top:52px; padding-bottom:74px; overflow-x:hidden; }
   .mobile-header{ display:flex !important; }
@@ -148,7 +148,8 @@ body.menu-fechado .s-user-name{ display:none; }
 .link-limpar{ background:none; border:none; color:var(--accent); font-weight:700; font-size:.82rem; cursor:pointer; padding:6px; }
 
 .kpis{ display:grid; grid-template-columns:repeat(var(--n,6), minmax(0,1fr)); gap:12px; margin-bottom:18px; }
-@media (max-width:1100px){ .kpis{ grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); } }
+@media (max-width:1100px){ .kpis{ grid-template-columns:repeat(var(--t,3), minmax(0,1fr)); } }  /* tablet: 6 indicadores em 3 + 3 */
+@media (max-width:560px){ .kpis{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
 .kpi{ background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:14px 16px; box-shadow:var(--shadow-card); text-align:left; cursor:pointer; transition:box-shadow .15s, transform .15s; }
 .kpi:hover{ box-shadow:var(--shadow-lift); }
 .kpi .k-label{ font-size:.72rem; color:var(--muted); font-weight:600; display:flex; align-items:center; gap:6px; }
@@ -241,7 +242,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 
 .toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:12px 20px; border-radius:18px; font-size:.86rem; font-weight:600; z-index:900; box-shadow:var(--shadow-lift); max-width:calc(100vw - 32px); }
 .toast.erro{ background:var(--bad); }
-@media (max-width:767px){ .toast{ bottom:90px; } }
+@media (max-width:1100px){ .toast{ bottom:90px; } }
 
 /* avatar */
 .avatar{ border-radius:999px; background:var(--accent); color:#fff; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; letter-spacing:-.02em; line-height:1; overflow:hidden; }
@@ -534,7 +535,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
         </div>
       </div>
       <div class="aviso-alerta" id="uni-alerta" hidden></div>
-      <div class="kpis" id="uni-kpis" style="--n:4"></div>
+      <div class="kpis" id="uni-kpis" style="--n:4;--t:2"></div>
       <div class="filtros" id="filtros-uni"></div>
       <div class="tabela-wrap"><div class="tabela-scroll" id="t-uni"></div></div>
     </section>
@@ -1729,7 +1730,7 @@ function renderTreinGeral(){
   el.innerHTML =
     '<div class="filtros" id="ftg-filtros">' + filtroSel('filial', 'Todas as filiais', listaFiliaisColab(), f.filial) + filtroSel('area', 'Todas as áreas', listaAreasColab(), f.area) +
       '<label>Período (horas) <input type="date" data-f="de" value="' + esc(f.de) + '"> a <input type="date" data-f="ate" value="' + esc(f.ate) + '"></label><button class="link-limpar" data-limpar>Limpar</button></div>' +
-    '<div class="kpis" id="ftg-kpis" style="--n:' + kp.length + '">' + kp.map(function(k, i){ return '<button class="kpi ' + (k.cls || '') + '" data-i="' + i + '"><div class="k-label">' + esc(k.l) + '</div><div class="k-valor">' + esc(k.v) + '</div><div class="k-sub">' + esc(k.s) + '</div></button>'; }).join('') + '</div>' +
+    '<div class="kpis" id="ftg-kpis" style="--n:' + kp.length + ';--t:' + (kp.length % 3 === 0 ? 3 : 4) + '">' + kp.map(function(k, i){ return '<button class="kpi ' + (k.cls || '') + '" data-i="' + i + '"><div class="k-label">' + esc(k.l) + '</div><div class="k-valor">' + esc(k.v) + '</div><div class="k-sub">' + esc(k.s) + '</div></button>'; }).join('') + '</div>' +
     '<div class="grid-cards">' +
       '<div class="card"><h2>Aderência por filial</h2><p class="c-sub">% dos treinamentos exigidos que estão em dia</p><div class="barras" id="tg-filial"></div></div>' +
       '<div class="card"><h2>Aderência por área</h2><p class="c-sub">% em dia por centro de custo</p><div class="barras" id="tg-area"></div></div>' +
