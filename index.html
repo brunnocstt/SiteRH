@@ -188,7 +188,11 @@ tbody tr{ cursor:pointer; transition:background .12s; }
 tbody tr:hover{ background:var(--surface-2); }
 tbody tr:last-child td{ border-bottom:none; }
 td.cel{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:128px; }
-td.num{ text-align:right; font-variant-numeric:tabular-nums; }
+td.num, th.num{ text-align:center; font-variant-numeric:tabular-nums; }
+.so-tablet{ display:none; }
+@media (max-width:1100px){ .t-oculta{ display:none; } .so-tablet{ display:block; } td.cel{ max-width:200px; } .quem .q-nome, .quem .q-sub{ max-width:260px; } }
+@media (max-width:560px){ .m-oculta{ display:none; } }
+
 .cod{ color:var(--muted); font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; }
 
 .pill{ display:inline-flex; align-items:center; gap:6px; padding:2px 9px; border-radius:999px; font-size:.7rem; font-weight:700; white-space:nowrap; background:var(--surface-2); color:var(--ink-soft); }
@@ -330,6 +334,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 .aviso-cap{ background:var(--warn-soft); color:var(--warn); border-radius:12px; padding:8px 12px; font-size:.8rem; font-weight:600; margin-bottom:10px; }
 @media (max-width:560px){ .part-linha{ grid-template-columns:1fr 1fr; } }
 
+#org-print-cab{ display:none; }
 /* alternância de visão (painel/lista, lista/organograma) */
 .head-actions{ margin-left:auto; justify-content:flex-end; }
 .seg{ display:inline-flex; background:var(--surface-2); border-radius:999px; padding:3px; gap:2px; }
@@ -387,6 +392,13 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 .acoes-linha .btn{ padding:5px 9px; font-size:.74rem; }
 /* impressão / PDF */
 @media print{
+  body.imprimindo-org .page:not(#page-organograma), body.imprimindo-org .page-head, body.imprimindo-org .org-node-ver{ display:none !important; }
+  body.imprimindo-org #org-print-cab{ display:block; margin:0 0 10px; }
+  body.imprimindo-org #org-print-cab .t{ font-size:16px; font-weight:800; }
+  body.imprimindo-org #org-print-cab .s{ font-size:10px; color:#555; margin-top:2px; }
+  body.imprimindo-org .tabela-wrap{ border:none; box-shadow:none; border-radius:0; overflow:visible; }
+  body.imprimindo-org .org-tree{ overflow:visible; padding:6px 0 0; width:max-content; margin:0 auto; }
+  body.imprimindo-org *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   .sidebar, .mobile-header, .mobile-bottom-nav, .head-actions, .filtros, .s-user-dropdown, .toast{ display:none !important; }
   .main{ margin:0 !important; padding:0 !important; }
   .page{ padding:0; max-width:none; }
@@ -597,9 +609,10 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
           <h1>Organograma</h1>
           <p id="org-sub">Quem responde a quem. A estrutura é mantida no Hub; aqui é só consulta.</p>
         </div>
-        <div class="head-actions"><div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div></div>
+        <div class="head-actions"><button class="btn btn-ghost" onclick="exportarOrg()"><svg><use href="#i-pdf"/></svg>PDF</button><div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div></div>
         
       </div>
+      <div id="org-print-cab"></div>
       <div class="filtros" id="filtros-org"></div>
       <div class="tabela-wrap"><div class="org-tree" id="org-tree"></div></div>
     </section>
@@ -1298,6 +1311,33 @@ async function exportarExcel(){
   var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Vagas');
   XLSX.writeFile(wb, 'vagas_' + hojeISO() + '.xlsx');
 }
+async function exportarOrg(){
+  var tree = document.getElementById('org-tree'), foco = S.mapColab[S.orgFoco], f = S.fo;
+  if (!tree || !tree.firstElementChild || !foco) { toast('Nada para exportar.', true); return; }
+  try { await registrarExportacao('pdf', 'organograma (' + foco.nome + ')', S.fo); }
+  catch (e) { toast('Exportação bloqueada: não foi possível registrar. ' + (e.message || ''), true); return; }
+  var filtros = [];
+  if (f.filial) filtros.push('Filial: ' + nomeFilialColab(f.filial));
+  if (f.area) filtros.push('Área: ' + capitalizarArea(f.area));
+  var cab = document.getElementById('org-print-cab');
+  cab.innerHTML = '<div class="t">Organograma · ' + esc(foco.nome) + '</div><div class="s">' + esc((filtros.length ? filtros.join(' · ') + ' · ' : '') + 'emitido em ' + fmtDataHora(new Date())) + '</div>';
+  var tituloAntes = document.title, pg = document.createElement('style');
+  pg.textContent = '@page{ size:A4 landscape; margin:10mm; }';
+  document.head.appendChild(pg);
+  document.body.classList.add('imprimindo-org');
+  document.title = 'Organograma - ' + foco.nome;
+  tree.style.zoom = ''; tree.style.width = 'max-content';
+  var w = tree.offsetWidth, h = tree.offsetHeight;
+  tree.style.zoom = Math.min(1, 1040 / w, 640 / h);   // cabe numa página A4 paisagem, do jeito que está na tela
+  var feito = false;
+  function limpar(){
+    if (feito) return; feito = true;
+    document.body.classList.remove('imprimindo-org'); pg.remove(); document.title = tituloAntes; tree.style.zoom = ''; tree.style.width = ''; cab.innerHTML = '';
+  }
+  S.limparOrg = limpar;   // se o navegador não avisar o fim da impressão, a próxima ação da tela limpa
+  window.addEventListener('afterprint', limpar, { once:true });
+  window.print();
+}
 async function exportarPdf(qual){
   try { await registrarExportacao('pdf', qual === 'painel' ? 'painel de vagas' : 'lista de vagas', qual === 'painel' ? S.fp : S.fv); }
   catch (e) { toast('Exportação bloqueada: não foi possível registrar. ' + (e.message || ''), true); return; }
@@ -1412,13 +1452,13 @@ function renderColab(){
   document.getElementById('colab-sub').textContent = lista.length + (lista.length === 1 ? ' pessoa' : ' pessoas') + ' · cadastro mantido no Hub';
   var comDocs = podeEditar();
   document.getElementById('t-colab').innerHTML = lista.length
-    ? '<table><thead><tr><th>Colaborador</th><th>Matrícula</th><th>Cargo</th><th>Área</th><th>Filial</th><th>Gestor</th><th>Admissão</th>' + (comDocs ? '<th class="num">Docs</th>' : '') + '</tr></thead><tbody>' +
+    ? '<table><thead><tr><th>Colaborador</th><th>Matrícula</th><th class="t-oculta">Cargo</th><th class="t-oculta">Área</th><th>Filial</th><th class="m-oculta">Gestor</th><th class="t-oculta">Admissão</th>' + (comDocs ? '<th class="num t-oculta">Docs</th>' : '') + '</tr></thead><tbody>' +
       lista.map(function(p){
         return '<tr data-colab="' + p.id + '"><td><div class="quem">' + avatarPessoa(p) + '<div><div class="q-nome">' + esc(p.nome) + '</div>' +
-          (p.inativo ? '<div class="q-sub">Inativo</div>' : '') + '</div></div></td>' +
-          '<td class="cod">' + esc(matCurta(p) || '—') + '</td><td class="cel" title="' + esc(capitalizarCargo(p.cargo)) + '">' + esc(capitalizarCargo(p.cargo) || '—') + '</td><td class="cel">' + esc(capitalizarArea(p.centro_custo) || '—') + '</td>' +
-          '<td class="cel">' + esc(nomeFilialColab(p.filial_id)) + '</td><td class="cel" title="' + esc(nomeColab(p.gestor_imediato_id)) + '">' + esc(nomeColab(p.gestor_imediato_id)) + '</td><td style="white-space:nowrap">' + fmtData(p.admissao) + '</td>' +
-          (comDocs ? '<td class="num">' + (S.docCont[p.id] || 0) + '</td>' : '') + '</tr>';
+          (p.inativo ? '<div class="q-sub">Inativo</div>' : '') + '<div class="q-sub so-tablet">' + esc(capitalizarCargo(p.cargo) || '—') + '</div></div></div></td>' +
+          '<td class="cod">' + esc(matCurta(p) || '—') + '</td><td class="cel t-oculta" title="' + esc(capitalizarCargo(p.cargo)) + '">' + esc(capitalizarCargo(p.cargo) || '—') + '</td><td class="cel t-oculta">' + esc(capitalizarArea(p.centro_custo) || '—') + '</td>' +
+          '<td class="cel">' + esc(nomeFilialColab(p.filial_id)) + '</td><td class="cel m-oculta" title="' + esc(nomeColab(p.gestor_imediato_id)) + '">' + esc(nomeColab(p.gestor_imediato_id)) + '</td><td class="t-oculta" style="white-space:nowrap">' + fmtData(p.admissao) + '</td>' +
+          (comDocs ? '<td class="num t-oculta">' + (S.docCont[p.id] || 0) + '</td>' : '') + '</tr>';
       }).join('') + '</tbody></table>'
     : '<div class="vazio" style="padding:28px">Ninguém com esses filtros.</div>';
 }
@@ -1453,6 +1493,7 @@ function orgConstruir(){
   return { porId: porId, por: por };
 }
 function renderOrg(){
+  if (S.limparOrg) S.limparOrg();
   var T = orgConstruir(), por = T.por, porId = T.porId, f = S.fo, filtrando = !!(f.filial || f.area);
   function bate(p){ return (!f.filial || p.filial_id === f.filial) && (!f.area || areaChave(p) === f.area); }
   var mDesc = {}, mMatch = {};
