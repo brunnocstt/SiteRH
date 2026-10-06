@@ -372,8 +372,9 @@ td.num, th.num{ text-align:center; font-variant-numeric:tabular-nums; }
 .stepper input{ border:none !important; border-radius:0 !important; text-align:center; font-weight:800; font-size:1rem; min-height:42px !important; width:100%; padding:0 !important; -moz-appearance:textfield; background:transparent; }
 .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
 .stepper:focus-within{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-tint-10); }
-.uni-total{ margin-top:12px; font-size:.84rem; color:var(--muted); }
-.uni-total b{ color:var(--ink); font-size:1.05rem; }
+.uni-total{ margin-top:14px; display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border-radius:14px; padding:10px 16px; }
+.uni-total span{ font-size:.78rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.uni-total strong{ font-size:1.5rem; font-weight:800; line-height:1; color:var(--accent); font-variant-numeric:tabular-nums; }
 @media (max-width:420px){ .steppers{ grid-template-columns:1fr; } }
 /* gráfico mensal */
 .mes-topo{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
@@ -2611,7 +2612,7 @@ function abrirNovaEntrega(){
       return '<div class="stepper-box"><span>' + t[1] + '</span><div class="stepper"><button type="button" data-d="-1" aria-label="Diminuir">−</button>' +
         '<input data-k="' + t[0] + '" type="number" min="0" max="99" inputmode="numeric" value="' + t[2] + '"><button type="button" data-d="1" aria-label="Aumentar">+</button></div></div>';
     }).join('') + '</div>' +
-    '<div class="uni-total">Total: <b id="uni-total">2</b> peça(s)</div>' +
+    '<div class="uni-total"><span>Total de peças</span><strong id="uni-total">2</strong></div>' +
     '<p class="modal-note">Ao salvar, o termo em PDF é baixado para impressão. Depois da assinatura, anexe o documento digitalizado nesta tela.</p>';
   abrirG({ titulo:'Nova entrega de uniforme', corpo:corpo, textoSalvar:'Salvar e baixar termo', aoSalvar:async function(){
     if (!escolhido) gErro('Escolha um colaborador da lista.');
