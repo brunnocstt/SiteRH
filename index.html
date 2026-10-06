@@ -331,7 +331,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 @media (max-width:560px){ .part-linha{ grid-template-columns:1fr 1fr; } }
 
 /* alternância de visão (painel/lista, lista/organograma) */
-.seg-wrap{ margin-bottom:14px; }
+.head-actions{ margin-left:auto; justify-content:flex-end; }
 .seg{ display:inline-flex; background:var(--surface-2); border-radius:999px; padding:3px; gap:2px; }
 .seg a{ padding:6px 16px; border-radius:999px; font-size:.8rem; font-weight:700; color:var(--ink-soft); text-decoration:none; transition:background .15s, color .15s; }
 .seg a:hover{ color:var(--ink); }
@@ -482,7 +482,6 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
   <main class="main">
     <!-- ===== Painel ===== -->
     <section class="page" id="page-painel">
-      <div class="seg-wrap"><div class="seg" role="tablist"><a href="#painel" data-seg="painel">Painel</a><a href="#vagas" data-seg="vagas">Lista</a></div></div>
       <div class="page-head">
         <div>
           <h1>Painel de vagas</h1>
@@ -490,6 +489,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
         </div>
         <div class="head-actions">
           <button class="btn btn-ghost" onclick="exportarPdf('painel')"><svg><use href="#i-pdf"/></svg>PDF</button>
+          <div class="seg" role="tablist"><a href="#painel" data-seg="painel">Painel</a><a href="#vagas" data-seg="vagas">Lista</a></div>
         </div>
       </div>
       <div class="filtros" id="filtros-painel"></div>
@@ -553,7 +553,6 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 
     <!-- ===== Vagas ===== -->
     <section class="page" id="page-vagas" hidden>
-      <div class="seg-wrap"><div class="seg" role="tablist"><a href="#painel" data-seg="painel">Painel</a><a href="#vagas" data-seg="vagas">Lista</a></div></div>
       <div class="page-head">
         <div>
           <h1>Vagas</h1>
@@ -562,8 +561,9 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
         <div class="head-actions">
           <button class="btn btn-ghost" id="btn-importar" hidden onclick="abrirImportacao()"><svg><use href="#i-excel"/></svg>Importar planilha</button>
           <button class="btn btn-ghost" onclick="exportarExcel()"><svg><use href="#i-excel"/></svg>Excel</button>
-          <button class="btn btn-ghost" onclick="exportarPdf('vagas')"><svg><use href="#i-pdf"/></svg>PDF</button>
           <button class="btn btn-primary" id="btn-nova-vaga" hidden onclick="abrirFormVaga()"><svg><use href="#i-mais"/></svg>Nova vaga</button>
+          <button class="btn btn-ghost" onclick="exportarPdf('vagas')"><svg><use href="#i-pdf"/></svg>PDF</button>
+          <div class="seg" role="tablist"><a href="#painel" data-seg="painel">Painel</a><a href="#vagas" data-seg="vagas">Lista</a></div>
         </div>
       </div>
       <div class="filtros" id="filtros-vagas"></div>
@@ -592,12 +592,12 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 
     <!-- ===== Organograma ===== -->
     <section class="page" id="page-organograma" hidden>
-      <div class="seg-wrap"><div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div></div>
       <div class="page-head">
         <div>
           <h1>Organograma</h1>
           <p id="org-sub">Quem responde a quem. A estrutura é mantida no Hub; aqui é só consulta.</p>
         </div>
+        <div class="head-actions"><div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div></div>
         
       </div>
       <div class="filtros" id="filtros-org"></div>
@@ -606,7 +606,6 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
 
     <!-- ===== Colaboradores ===== -->
     <section class="page" id="page-colaboradores" hidden>
-      <div class="seg-wrap"><div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div></div>
       <div class="page-head">
         <div>
           <h1>Colaboradores</h1>
@@ -614,6 +613,7 @@ td.num{ text-align:right; font-variant-numeric:tabular-nums; }
         </div>
         <div class="head-actions">
           <button class="btn btn-ghost" onclick="exportarColabExcel()"><svg><use href="#i-excel"/></svg>Excel</button>
+          <div class="seg" role="tablist"><a href="#colaboradores" data-seg="colaboradores">Lista</a><a href="#organograma" data-seg="organograma">Organograma</a></div>
         </div>
       </div>
       <div class="filtros" id="filtros-colab"></div>
