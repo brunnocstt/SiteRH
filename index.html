@@ -376,6 +376,13 @@ td.num, th.num{ text-align:center; font-variant-numeric:tabular-nums; }
 .uni-total span{ font-size:.78rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
 .uni-total strong{ font-size:1.5rem; font-weight:800; line-height:1; color:var(--accent); font-variant-numeric:tabular-nums; }
 @media (max-width:420px){ .steppers{ grid-template-columns:1fr; } }
+.atv-item{ border:1px solid var(--line); border-radius:16px; padding:10px 12px; margin-bottom:8px; }
+.atv-topo{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.atv-nome{ font-size:.74rem; font-weight:800; word-break:break-all; }
+.atv-campos{ display:grid; grid-template-columns:1fr 150px; gap:8px; }
+.atv-campos .sel-mini{ width:100%; }
+.chk-sla{ display:flex; align-items:center; gap:8px; font-size:.78rem; color:var(--ink-soft); margin-top:8px; cursor:pointer; }
+.chk-sla input{ min-height:0 !important; width:auto !important; }
 .rm-atv{ all:unset; box-sizing:border-box; width:28px; height:28px; border-radius:10px; text-align:center; line-height:28px; font-size:1.1rem; color:var(--muted-2); cursor:pointer; }
 .rm-atv:hover{ background:var(--bad-soft); color:var(--bad); }
 /* gráfico mensal */
@@ -871,9 +878,9 @@ function ehErroDeSessao(err){
 function situacao(v){
   var fim = v.status === 'encerrada' ? (v.data_fechamento || hojeISO())
           : v.status === 'cancelada' ? (v.data_cancelamento || hojeISO()) : hojeISO();
-  var dias = Math.max(0, diasEntre(v.data_abertura, fim));
+  var corridos = Math.max(0, diasEntre(v.data_abertura, fim)), dias = diasSlaAte(v, fim);
   var sla = S.config.sla_dias;
-  var r = { dias: dias, restam: sla - dias };
+  var r = { dias: dias, corridos: corridos, restam: sla - dias };
   if (v.status === 'cancelada') { r.chave = 'cancelada'; r.rotulo = 'Cancelada'; r.cls = ''; }
   else if (v.status === 'encerrada') {
     r.chave = dias <= sla ? 'fechada_prazo' : 'fechada_fora';
@@ -893,7 +900,8 @@ function pillSla(v){
 }
 function pillEtapa(v){
   var cls = v.status === 'encerrada' ? 'ok' : v.status === 'cancelada' ? '' : 'azul';
-  return '<span class="pill ' + cls + '">' + esc(NOME_ETAPA[v.status]) + '</span>';
+  var pausa = pausaAtual(v);
+  return '<span class="pill ' + cls + '">' + esc(NOME_ETAPA[v.status]) + '</span>' + (pausa ? ' <span class="pill" title="O SLA do RH está parado: a vaga está com ' + esc(pausa) + '">⏸ ' + esc(pausa) + '</span>' : '');
 }
 
 /* ================== carga de dados ================== */
@@ -916,11 +924,13 @@ async function carregarBaseInicial(){
     consulta(function(){ return sb.from('origens').select('id,nome,ativo').order('nome'); }),
     consulta(function(){ return sb.from('motivos_cancelamento').select('id,nome,ativo').order('nome'); }),
     consulta(function(){ return sb.from('vagas').select('*').order('data_abertura', { ascending:false }).limit(5000); }),
-    consulta(function(){ return sb.from('atividade_etapa').select('atividade,etapa').order('atividade'); })
+    consulta(function(){ return sb.from('atividade_etapa').select('atividade,etapa,responsavel,conta_sla').order('atividade'); }),
+    consulta(function(){ return sb.from('vaga_atividades').select('vaga_id,atividade,desde,ate').order('desde').limit(30000); })
   ]);
   if (res[0]) S.config = res[0];
   S.filiais = res[1] || []; S.gestores = res[2] || []; S.origens = res[3] || []; S.motivos = res[4] || []; S.vagas = res[5] || [];
-  S.ativEtapa = {}; (res[6] || []).forEach(function(a){ S.ativEtapa[a.atividade] = a.etapa; });
+  S.ativEtapa = {}; S.ativInfo = {}; (res[6] || []).forEach(guardarAtividade);
+  agruparIntervalos(res[7] || []);
   S.mapFilial = {}; S.filiais.forEach(function(f){ S.mapFilial[f.id] = f.nome; });
   S.mapGestor = {}; S.gestores.forEach(function(g){ S.mapGestor[g.id] = g.nome; });
   S.mapOrigem = {}; S.origens.forEach(function(o){ S.mapOrigem[o.id] = o.nome; });
@@ -928,6 +938,27 @@ async function carregarBaseInicial(){
 }
 async function recarregarVagas(){
   S.vagas = await consulta(function(){ return sb.from('vagas').select('*').order('data_abertura', { ascending:false }).limit(5000); }) || [];
+  agruparIntervalos(await consulta(function(){ return sb.from('vaga_atividades').select('vaga_id,atividade,desde,ate').order('desde').limit(30000); }) || []);
+}
+function guardarAtividade(a){ S.ativEtapa[a.atividade] = a.etapa; S.ativInfo[a.atividade] = { etapa:a.etapa, responsavel:a.responsavel || '', conta_sla:a.conta_sla !== false }; }
+function agruparIntervalos(lista){ S.vagAtv = {}; lista.forEach(function(i){ (S.vagAtv[i.vaga_id] = S.vagAtv[i.vaga_id] || []).push(i); }); }
+// dias que contam no SLA do RH até a data: só o tempo em atividades com conta_sla (o que está com o solicitante ou com diretores/vice não conta)
+function diasSlaAte(v, ate){
+  var total = Math.max(0, diasEntre(v.data_abertura, ate)), iv = (S.vagAtv || {})[v.id];
+  if (!v.processo || !iv || !iv.length) return total;
+  var soma = 0;
+  iv.forEach(function(i){
+    var info = S.ativInfo[i.atividade];
+    if (info && !info.conta_sla) return;
+    var ini = i.desde < v.data_abertura ? v.data_abertura : i.desde, fim = i.ate && i.ate < ate ? i.ate : ate;
+    if (fim > ini) soma += diasEntre(ini, fim);
+  });
+  return Math.min(soma, total);
+}
+function pausaAtual(v){ // vaga aberta que está, agora, com outra área: devolve quem
+  if (!estaAberta(v) || !v.atividade_atual) return null;
+  var info = S.ativInfo[v.atividade_atual];
+  return info && !info.conta_sla ? (info.responsavel || 'outra área') : null;
 }
 function nomeFilial(id){ return S.mapFilial[id] || '—'; }
 function nomeGestor(id){ return id ? (S.mapGestor[id] || 'Gestor inativo') : '—'; }
@@ -1114,8 +1145,8 @@ function renderPainel(){
   document.getElementById('painel-sub').textContent = 'Recrutamento e Seleção · período ' + fmtData(S.fp.de) + ' a ' + fmtData(S.fp.ate);
   var kpis = [
     { l:'Vagas abertas', v:abertas.length, s:abertas.reduce(function(a,v){ return a + (v.quantidade||1); }, 0) + ' posições · situação atual', go:{ status:'abertas' } },
-    { l:'Fora do SLA', v:atrasadas.length, s:'abertas há mais de ' + S.config.sla_dias + ' dias', cls: atrasadas.length ? 'alerta' : '', go:{ sla:'atrasada' } },
-    { l:'Vagas críticas', v:criticas.length, s:'abertas há mais de ' + S.config.dias_critica + ' dias', cls: criticas.length ? 'alerta' : '', go:{ sla:'critica' } },
+    { l:'Fora do SLA', v:atrasadas.length, s:'mais de ' + S.config.sla_dias + ' dias de SLA do RH', cls: atrasadas.length ? 'alerta' : '', go:{ sla:'atrasada' } },
+    { l:'Vagas críticas', v:criticas.length, s:'mais de ' + S.config.dias_critica + ' dias de SLA do RH', cls: criticas.length ? 'alerta' : '', go:{ sla:'critica' } },
     { l:'Fechadas no período', v:encerradasPer.length, s: pct == null ? 'nenhuma no período' : pct + '% dentro do SLA', go:{ status:'encerrada' } },
     { l:'Tempo médio de fechamento', v: tempoMedio == null ? '—' : Math.round(tempoMedio) + 'd', s:'vagas fechadas no período', cls: tempoMedio > S.config.sla_dias ? 'atencao' : '', go:{ status:'encerrada' } },
     { l:'Canceladas no período', v:canceladasPer.length, s:'ver motivos abaixo', go:{ status:'cancelada' } }
@@ -1170,7 +1201,7 @@ function tabelaVagas(lista){
     lista.map(function(v){
       return '<tr data-id="' + v.id + '"><td class="cod">' + codVaga(v.id) + '</td><td><strong>' + esc(v.cargo) + '</strong>' + (v.origem_processo === 'movimentacao' ? ' <span class="pill azul">Movimentação</span>' : '') + (v.quantidade > 1 ? ' <span class="pill">' + v.quantidade + ' posições</span>' : '') + '</td>' +
         '<td>' + esc(nomeFilial(v.filial_id)) + '</td><td>' + esc(nomeGestor(v.gestor_id)) + '</td><td>' + fmtData(v.data_abertura) + '</td>' +
-        '<td class="num">' + situacao(v).dias + '</td><td>' + pillEtapa(v) + '</td><td>' + pillSla(v) + '</td></tr>';
+        '<td class="num" title="' + situacao(v).corridos + ' dias corridos desde a abertura">' + situacao(v).dias + '</td><td>' + pillEtapa(v) + '</td><td>' + pillSla(v) + '</td></tr>';
     }).join('') + '</tbody></table>';
 }
 function renderVagas(){
@@ -1192,6 +1223,15 @@ function fecharModal(id){ document.getElementById(id).hidden = true; }
 });
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { fecharModal('modal-form'); fecharModal('modal-detalhe'); } });
 
+function atividadesHtml(v){
+  var iv = (S.vagAtv || {})[v.id];
+  if (!v.processo || !iv || !iv.length) return '';
+  return '<div class="sec-tit">Atividades do processo</div><ul class="timeline">' + iv.map(function(i){
+    var info = S.ativInfo[i.atividade] || {}, conta = info.conta_sla !== false;
+    return '<li><div class="t-tit">' + esc(i.atividade) + (info.responsavel ? ' · ' + esc(info.responsavel) : '') + '</div><div class="t-sub">' +
+      esc(fmtData(i.desde) + ' → ' + (i.ate ? fmtData(i.ate) : 'agora') + ' · ' + (conta ? 'conta no SLA do RH' : 'não conta no SLA (com outra área)')) + '</div></li>';
+  }).join('') + '</ul>';
+}
 async function abrirDetalhe(id){
   var v = S.vagas.find(function(x){ return x.id === id; }); if (!v) return;
   var s = situacao(v);
@@ -1208,12 +1248,14 @@ async function abrirDetalhe(id){
   if (v.status === 'encerrada') itens.push(['Fechamento', fmtData(v.data_fechamento)], ['Aprovado', v.candidato_aprovado || '—'], ['Origem do aprovado', S.mapOrigem[v.origem_id] || '—']);
   if (v.status === 'cancelada') itens.push(['Cancelamento', fmtData(v.data_cancelamento)], ['Motivo', S.mapMotivo[v.motivo_cancelamento_id] || '—']);
   var slaTxt = estaAberta(v)
-    ? (s.restam >= 0 ? 'dias em aberto · faltam ' + s.restam + ' para o SLA de ' + S.config.sla_dias : 'dias em aberto · ' + (-s.restam) + ' além do SLA de ' + S.config.sla_dias)
-    : 'dias do início ao fim · SLA de ' + S.config.sla_dias;
+    ? (s.restam >= 0 ? 'dias de SLA · faltam ' + s.restam + ' para o limite de ' + S.config.sla_dias : 'dias de SLA · ' + (-s.restam) + ' além do limite de ' + S.config.sla_dias)
+    : 'dias de SLA do início ao fim · limite de ' + S.config.sla_dias;
+  if (s.corridos !== s.dias) slaTxt += ' · ' + s.corridos + ' dias corridos, ' + (s.corridos - s.dias) + ' com outras áreas (não contam)';
   document.getElementById('det-corpo').innerHTML =
     '<div class="sla-box"><div class="sla-num">' + s.dias + '</div><div><div class="sla-txt">' + esc(slaTxt) + '</div>' + pillSla(v) + '</div></div>' +
     '<div class="det-grid">' + itens.map(function(i){ return '<div class="det-item"><div class="d-l">' + esc(i[0]) + '</div><div class="d-v">' + esc(i[1]) + '</div></div>'; }).join('') + '</div>' +
     (v.observacoes ? '<div class="det-item" style="margin-bottom:20px"><div class="d-l">Observações</div><div class="d-v" style="font-weight:500;white-space:pre-wrap">' + esc(v.observacoes) + '</div></div>' : '') +
+    atividadesHtml(v) +
     '<div class="sec-tit">Histórico</div><ul class="timeline" id="det-hist"><li><div class="t-sub">Carregando…</div></li></ul>';
   var btEd = document.getElementById('det-editar');
   btEd.hidden = !podeEditar();
@@ -2275,9 +2317,10 @@ function renderPrevImportacao(){
   var nomesAtv = Object.keys(atvNovas);
   if (nomesAtv.length) {
     html += '<div class="sec-tit">Atividades novas — em que etapa do funil entram?</div>' + nomesAtv.map(function(a){
-      return '<div class="cfg-linha" style="grid-template-columns:1fr 170px"><div class="t" style="word-break:break-all">' + esc(a) + '</div><select data-atv="' + esc(a) + '" class="sel-mini">' +
+      return '<div class="cfg-linha" style="grid-template-columns:1fr 170px"><div><div class="t" style="word-break:break-all">' + esc(a) + '</div>' +
+        '<label class="chk-sla"><input type="checkbox" data-atv-sla="' + esc(a) + '"' + (im.contaSla[a] === false ? '' : ' checked') + '> Conta no SLA do RH</label></div><select data-atv="' + esc(a) + '" class="sel-mini">' +
         ETAPAS.slice(0, 6).map(function(e){ return '<option value="' + e[0] + '"' + ((im.escolhas[a] || 'solicitada') === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join('') + '</select></div>';
-    }).join('') + '<p class="modal-note">A escolha fica salva e vale para as próximas importações (dá para ajustar em Configurações).</p>';
+    }).join('') + '<p class="modal-note">Desmarque quando a vaga estiver com outra área (solicitante, diretor, vice-presidência…): esse tempo não entra no SLA do RH. A escolha fica salva (dá para ajustar em Configurações).</p>';
   }
   var av = [];
   if (semFilial.length) av.push(semFilial.length + ' processo(s) desconsiderado(s) por não pertencerem a uma filial cadastrada (código: ' + Object.keys(codsSem).join(', ') + ').');
@@ -2288,6 +2331,7 @@ function renderPrevImportacao(){
   if (av.length) html += '<div class="imp-avisos">' + av.map(function(a){ return '<div>• ' + esc(a) + '</div>'; }).join('') + '</div>';
   el.innerHTML = html;
   el.querySelectorAll('select[data-atv]').forEach(function(s){ s.onchange = function(){ im.escolhas[s.dataset.atv] = s.value; renderPrevImportacao(); }; });
+  el.querySelectorAll('input[data-atv-sla]').forEach(function(c){ c.onchange = function(){ im.contaSla[c.dataset.atvSla] = c.checked; }; });
 }
 function abrirImportacao(){
   if (!podeEditar()) return;
@@ -2299,10 +2343,11 @@ function abrirImportacao(){
       if (!S.imp || !S.imp.linhas.length) gErro('Escolha um arquivo com processos reconhecidos.');
       var res = S.imp.linhas.map(resolverLinha).filter(function(o){ return o.situacaoImp !== 'ignorada'; });
       if (!res.length) gErro('Nenhum processo de filial cadastrada neste arquivo.');
-      var novas = Object.keys(S.imp.escolhas).filter(function(a){ return !S.ativEtapa[a] && res.some(function(o){ return o.atividade === a; }); }).map(function(a){ return { atividade:a, etapa:S.imp.escolhas[a] }; });
+      var pendentes = {}; res.forEach(function(o){ if (o.status === 'aberta' && o.atividade && !S.ativEtapa[o.atividade]) pendentes[o.atividade] = 1; });
+      var novas = Object.keys(pendentes).map(function(a){ return { atividade:a, etapa:S.imp.escolhas[a] || 'solicitada', conta_sla:S.imp.contaSla[a] !== false }; });
       if (novas.length) {
         await consulta(function(){ return sb.from('atividade_etapa').upsert(novas); });
-        novas.forEach(function(n){ S.ativEtapa[n.atividade] = n.etapa; });
+        novas.forEach(guardarAtividade);
       }
       var linhas = res.map(function(o){ return { processo:o.processo, tipo_processo:o.tipo_processo, abertura:o.abertura, status:o.status, etapa:o.etapa || null,
         atividade:o.atividade, quantidade:o.quantidade, cargo:o.cargo, cargo_origem:o.cargo_origem, filial_codigo:o.filial_codigo, orcado:o.orcado, vigencia:o.vigencia, encerramento:o.encerramento }; });
@@ -2313,7 +2358,7 @@ function abrirImportacao(){
   document.getElementById('imp-arq').addEventListener('change', async function(){
     var files = [].slice.call(this.files); if (!files.length) return;
     if (typeof XLSX === 'undefined') { toast('O leitor de planilhas ainda está carregando. Tente de novo em instantes.', true); return; }
-    try { var r = await lerPlanilhas(files); S.imp = { linhas:r.linhas, ignoradas:r.ignoradas, nomes:r.nomes, escolhas:{} }; }
+    try { var r = await lerPlanilhas(files); S.imp = { linhas:r.linhas, ignoradas:r.ignoradas, nomes:r.nomes, escolhas:{}, contaSla:{} }; }
     catch (e) { console.error(e); S.imp = null; document.getElementById('imp-prev').innerHTML = '<div class="aviso-alerta">Não foi possível ler o arquivo: ' + esc(e.message || e) + '</div>'; return; }
     renderPrevImportacao();
   });
@@ -2366,7 +2411,7 @@ function renderGraficoMes(base){
     else if (modo === 'sla') vals = [fechadas.filter(function(v){ return situacao(v).chave === 'fechada_prazo'; }).length, fechadas.filter(function(v){ return situacao(v).chave === 'fechada_fora'; }).length];
     else if (modo === 'tempo') { var md = media(fechadas.map(function(v){ return situacao(v).dias; })); vals = [md == null ? 0 : Math.round(md)]; }
     else if (modo === 'estoque') vals = [noFim.length];
-    else vals = [noFim.filter(function(v){ return diasEntre(v.data_abertura, fim) > sla; }).length];
+    else vals = [noFim.filter(function(v){ return diasSlaAte(v, fim) > sla; }).length];
     return { mes:mes, vals:vals };
   });
   var max = 1;
@@ -2736,7 +2781,7 @@ async function abrirAssinado(e){
 function renderConfig(){
   var adm = S.nivel === 'admin', c = S.config, dis = adm ? '' : ' disabled';
   var linhas = [
-    ['sla_dias', 'SLA de vagas', 'Dias corridos entre a abertura e o fechamento. Acima disso a vaga é “fora do SLA”.', 'dias', 1, 365],
+    ['sla_dias', 'SLA de vagas', 'Dias com a vaga sob responsabilidade do RH (não conta o tempo com solicitante, diretores ou vice-presidência). Acima disso a vaga é “fora do SLA”.', 'dias', 1, 365],
     ['dias_critica', 'Vaga crítica', 'Vaga ainda aberta há mais de quantos dias. Precisa ser maior que o SLA.', 'dias', 1, 730],
     ['dias_alerta_vencimento', 'Vencimento de treinamentos', 'Quantos dias antes do vencimento o treinamento passa a aparecer como “vencendo”.', 'dias', 1, 365],
     ['horas_alerta_assinatura', 'Devolução do termo de uniforme', 'Horas após a emissão do termo sem o documento assinado para disparar o alerta.', 'horas', 1, 720]
@@ -2758,42 +2803,45 @@ function renderConfig(){
 }
 function renderCfgAtividades(){
   var adm = S.nivel === 'admin', el = document.getElementById('cfg-atv'); if (!el) return;
-  var nomes = Object.keys(S.ativEtapa).sort();
+  var nomes = Object.keys(S.ativInfo).sort();
   var opEtapas = function(sel){ return ETAPAS.slice(0, 6).map(function(e){ return '<option value="' + e[0] + '"' + (sel === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join(''); };
-  el.innerHTML = '<h2>Atividades do processo → etapa</h2><p class="c-sub">Na importação da planilha, a atividade atual do workflow define a etapa da vaga no funil. Use o nome exatamente como vem na planilha.</p>' +
+  var dis = adm ? '' : ' disabled';
+  el.innerHTML = '<h2>Atividades do processo</h2><p class="c-sub">A atividade atual do workflow define a etapa da vaga no funil e se o tempo conta no SLA do RH. Use o nome exatamente como vem na planilha.</p>' +
     (nomes.length ? nomes.map(function(a){
-      return '<div class="cfg-linha" style="grid-template-columns:1fr 150px 34px"><div class="t" style="word-break:break-all;font-size:.76rem">' + esc(a) + '</div>' +
-        '<select class="sel-mini" data-atv-cfg="' + esc(a) + '"' + (adm ? '' : ' disabled') + '>' + opEtapas(S.ativEtapa[a]) + '</select>' +
-        (adm ? '<button class="rm-atv" data-atv-del="' + esc(a) + '" title="Remover" aria-label="Remover">×</button>' : '<span></span>') + '</div>';
+      var i = S.ativInfo[a];
+      return '<div class="atv-item" data-atv-item="' + esc(a) + '"><div class="atv-topo"><span class="atv-nome">' + esc(a) + '</span>' +
+        (adm ? '<button class="rm-atv" data-atv-del="' + esc(a) + '" title="Remover" aria-label="Remover">×</button>' : '') + '</div>' +
+        '<div class="atv-campos"><input type="text" class="sel-mini" data-f="resp" maxlength="60" placeholder="Responsável (ex.: Diretor de RH)" value="' + esc(i.responsavel) + '"' + dis + '>' +
+        '<select class="sel-mini" data-f="etapa"' + dis + '>' + opEtapas(i.etapa) + '</select></div>' +
+        '<label class="chk-sla"><input type="checkbox" data-f="conta"' + (i.conta_sla ? ' checked' : '') + dis + '> Conta no SLA do RH</label></div>';
     }).join('') : '<div class="vazio">Ainda nenhuma atividade. Elas aparecem na primeira importação.</div>') +
-    (adm ? '<div class="sec-tit" style="margin-top:16px">Nova atividade</div><div class="cfg-linha" style="grid-template-columns:1fr 150px;border-bottom:none;padding-bottom:4px"><input id="atv-nova" type="text" maxlength="120" placeholder="Ex.: ENTREVISTAR_CANDIDATO" style="text-align:left;text-transform:uppercase"><select class="sel-mini" id="atv-etapa">' + opEtapas('solicitada') + '</select></div>' +
+    (adm ? '<div class="sec-tit" style="margin-top:16px">Nova atividade</div><div class="atv-item" id="atv-novo"><div class="atv-campos" style="grid-template-columns:1fr"><input id="atv-nova" type="text" class="sel-mini" maxlength="120" placeholder="Ex.: ANALISAR_CHAMADO_VICE_PRESIDENCIA" style="text-transform:uppercase"></div>' +
+      '<div class="atv-campos" style="margin-top:8px"><input id="atv-resp" type="text" class="sel-mini" maxlength="60" placeholder="Responsável (ex.: Vice-presidência)"><select class="sel-mini" id="atv-etapa">' + opEtapas('aprovacao') + '</select></div>' +
+      '<label class="chk-sla"><input type="checkbox" id="atv-conta" checked> Conta no SLA do RH</label></div>' +
       '<div class="cfg-acoes" style="margin-top:6px"><button class="btn btn-primary" id="atv-add">Adicionar atividade</button></div>' : '');
   if (!adm) return;
-  el.onchange = async function(ev){
-    var sel = ev.target.closest('select[data-atv-cfg]'); if (!sel) return;
-    try {
-      await consulta(function(){ return sb.from('atividade_etapa').upsert({ atividade: sel.dataset.atvCfg, etapa: sel.value }); });
-      S.ativEtapa[sel.dataset.atvCfg] = sel.value; toast('Etapa salva. Vale a partir da próxima importação.');
-    } catch (e) { toast('Não foi possível salvar: ' + (e.message || e), true); }
-  };
+  async function salvarItem(item){
+    var nome = item.dataset.atvItem, reg = { atividade:nome, etapa:item.querySelector('[data-f="etapa"]').value, responsavel:item.querySelector('[data-f="resp"]').value.trim() || null, conta_sla:item.querySelector('[data-f="conta"]').checked };
+    try { await consulta(function(){ return sb.from('atividade_etapa').upsert(reg); }); guardarAtividade(reg); toast('Salvo. Vale a partir da próxima importação; o SLA das vagas já importadas é recalculado na hora.'); render(); }
+    catch (e) { toast('Não foi possível salvar: ' + (e.message || e), true); }
+  }
+  el.onchange = function(ev){ var item = ev.target.closest('[data-atv-item]'); if (item) salvarItem(item); };
   el.onclick = async function(ev){
     var del = ev.target.closest('[data-atv-del]');
     if (del) {
       var nome = del.dataset.atvDel;
       if (!window.confirm('Remover a atividade ' + nome + '? Vagas já importadas continuam como estão; numa próxima importação ela será perguntada de novo.')) return;
-      try { await consulta(function(){ return sb.from('atividade_etapa').delete().eq('atividade', nome).select('atividade'); }); delete S.ativEtapa[nome]; renderCfgAtividades(); toast('Atividade removida.'); }
+      try { await consulta(function(){ return sb.from('atividade_etapa').delete().eq('atividade', nome).select('atividade'); }); delete S.ativEtapa[nome]; delete S.ativInfo[nome]; renderCfgAtividades(); toast('Atividade removida.'); }
       catch (e) { toast('Não foi possível remover: ' + (e.message || e), true); }
       return;
     }
     if (!ev.target.closest('#atv-add')) return;
     var nova = normAtv(document.getElementById('atv-nova').value);
     if (!nova) { toast('Digite o nome da atividade.', true); return; }
-    if (S.ativEtapa[nova]) { toast('Essa atividade já está cadastrada.', true); return; }
-    try {
-      var et = document.getElementById('atv-etapa').value;
-      await consulta(function(){ return sb.from('atividade_etapa').insert({ atividade: nova, etapa: et }); });
-      S.ativEtapa[nova] = et; renderCfgAtividades(); toast('Atividade adicionada.');
-    } catch (e) { toast('Não foi possível adicionar: ' + (e.message || e), true); }
+    if (S.ativInfo[nova]) { toast('Essa atividade já está cadastrada.', true); return; }
+    var reg = { atividade:nova, etapa:document.getElementById('atv-etapa').value, responsavel:document.getElementById('atv-resp').value.trim() || null, conta_sla:document.getElementById('atv-conta').checked };
+    try { await consulta(function(){ return sb.from('atividade_etapa').insert(reg); }); guardarAtividade(reg); renderCfgAtividades(); toast('Atividade adicionada.'); }
+    catch (e) { toast('Não foi possível adicionar: ' + (e.message || e), true); }
   };
 }
 async function salvarConfig(){
