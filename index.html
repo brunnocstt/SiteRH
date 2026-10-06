@@ -351,6 +351,30 @@ td.num, th.num{ text-align:center; font-variant-numeric:tabular-nums; }
 .imp-avisos{ background:var(--warn-soft); color:var(--warn); border-radius:14px; padding:10px 14px; font-size:.78rem; font-weight:600; display:flex; flex-direction:column; gap:6px; margin-top:10px; }
 .sel-mini{ border:1px solid var(--line); background:var(--surface); border-radius:10px; padding:5px 8px; font-size:.8rem; min-height:32px; width:100%; }
 @media (max-width:560px){ .imp-cards{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
+/* busca de colaborador e quantidades (nova entrega) */
+.combo{ position:relative; }
+.combo input{ width:100%; }
+.combo-lista{ position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:20; background:var(--surface); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow-lift); padding:6px; max-height:236px; overflow-y:auto; }
+.combo-item{ display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:12px; cursor:pointer; }
+.combo-item.ativo, .combo-item:hover{ background:var(--accent-soft); }
+.combo-item .avatar, .combo-ok .avatar{ width:32px; height:32px; font-size:.68rem; }
+.combo-txt{ min-width:0; }
+.combo-txt .n{ font-size:.86rem; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.combo-txt .s{ font-size:.74rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.combo-mais{ padding:8px 12px; font-size:.76rem; color:var(--muted-2); }
+.combo-ok{ display:flex; align-items:center; gap:10px; margin-top:8px; padding:8px 12px; background:var(--accent-soft); border-radius:14px; }
+.combo-ok svg{ width:18px; height:18px; margin-left:auto; color:var(--accent); flex-shrink:0; }
+.steppers{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; }
+.stepper-box > span{ display:block; font-size:.76rem; font-weight:700; color:var(--ink-soft); margin-bottom:6px; }
+.stepper{ display:grid; grid-template-columns:38px 1fr 38px; align-items:center; border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--surface); }
+.stepper button{ all:unset; box-sizing:border-box; height:42px; text-align:center; font-size:1.2rem; font-weight:700; color:var(--accent); cursor:pointer; user-select:none; }
+.stepper button:hover{ background:var(--accent-soft); }
+.stepper input{ border:none !important; border-radius:0 !important; text-align:center; font-weight:800; font-size:1rem; min-height:42px !important; width:100%; padding:0 !important; -moz-appearance:textfield; background:transparent; }
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.stepper:focus-within{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-tint-10); }
+.uni-total{ margin-top:12px; font-size:.84rem; color:var(--muted); }
+.uni-total b{ color:var(--ink); font-size:1.05rem; }
+@media (max-width:420px){ .steppers{ grid-template-columns:1fr; } }
 /* gráfico mensal */
 .mes-topo{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
 .mes-topo label{ display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--muted); }
@@ -2574,20 +2598,23 @@ async function gerarTermoPdf(e){
 function abrirNovaEntrega(){
   if (!podeEditar()) return;
   var ativos = S.colab.filter(function(p){ return !p.inativo; }).sort(function(a, b){ return a.nome.localeCompare(b.nome, 'pt-BR'); });
-  var rot = function(p){ return p.nome + ' — ' + (matCurta(p) || 'sem matrícula'); };
-  var num = ' min="0" max="99" inputmode="numeric"';
-  var corpo = '<div class="form-grid">' +
-    '<label class="campo full"><span>Colaborador</span><input data-k="colab" type="text" list="dl-colab" placeholder="Digite o nome ou a matrícula" autocomplete="off"></label>' +
-    '<datalist id="dl-colab">' + ativos.map(function(p){ return '<option value="' + esc(rot(p)) + '"></option>'; }).join('') + '</datalist>' +
-    campoG('data', 'Data da entrega', 'date', hojeISO(), { attrs:' max="' + hojeISO() + '"', full:true }) +
-    campoG('camisas', 'Camisas', 'number', '2', { attrs:num }) +
-    campoG('calcas', 'Calças', 'number', '0', { attrs:num }) +
-    campoG('blusas', 'Blusas de frio', 'number', '0', { attrs:num }) +
-    '</div><p class="modal-note">Informe quantas peças de cada tipo foram entregues. Ao salvar, o termo em PDF é baixado para impressão; depois da assinatura, anexe o documento digitalizado nesta tela.</p>';
+  var escolhido = null, ativoIdx = -1, achados = [];
+  var tipos = [['camisas', 'Camisas', '2'], ['calcas', 'Calças', '0'], ['blusas', 'Blusas de frio', '0']];
+  var corpo =
+    '<div class="campo full"><span>Colaborador</span>' +
+      '<div class="combo"><input id="cb-in" type="text" placeholder="Digite o nome ou a matrícula" autocomplete="off" role="combobox" aria-expanded="false">' +
+      '<div class="combo-lista" id="cb-lista" role="listbox" hidden></div></div>' +
+      '<div class="combo-sel" id="cb-sel" hidden></div></div>' +
+    '<div class="campo full" style="margin-top:14px"><span>Data da entrega</span><input data-k="data" type="date" value="' + hojeISO() + '" max="' + hojeISO() + '"></div>' +
+    '<div class="sec-tit" style="margin:18px 0 8px">Peças entregues</div>' +
+    '<div class="steppers">' + tipos.map(function(t){
+      return '<div class="stepper-box"><span>' + t[1] + '</span><div class="stepper"><button type="button" data-d="-1" aria-label="Diminuir">−</button>' +
+        '<input data-k="' + t[0] + '" type="number" min="0" max="99" inputmode="numeric" value="' + t[2] + '"><button type="button" data-d="1" aria-label="Aumentar">+</button></div></div>';
+    }).join('') + '</div>' +
+    '<div class="uni-total">Total: <b id="uni-total">2</b> peça(s)</div>' +
+    '<p class="modal-note">Ao salvar, o termo em PDF é baixado para impressão. Depois da assinatura, anexe o documento digitalizado nesta tela.</p>';
   abrirG({ titulo:'Nova entrega de uniforme', corpo:corpo, textoSalvar:'Salvar e baixar termo', aoSalvar:async function(){
-    var txt = gv('colab'), p = ativos.find(function(x){ return rot(x) === txt; });
-    if (!p) { var q = txt.toLowerCase(); var achados = ativos.filter(function(x){ return q && (x.nome.toLowerCase() === q || matCurta(x) === txt || x.matricula === txt); }); if (achados.length === 1) p = achados[0]; }
-    if (!p) gErro('Escolha um colaborador da lista.');
+    if (!escolhido) gErro('Escolha um colaborador da lista.');
     var data = gv('data');
     var c = parseInt(gv('camisas'), 10) || 0, k = parseInt(gv('calcas'), 10) || 0, b = parseInt(gv('blusas'), 10) || 0;
     if (!data) gErro('Informe a data da entrega.');
@@ -2595,13 +2622,59 @@ function abrirNovaEntrega(){
     if ([c, k, b].some(function(x){ return x < 0 || x > 99; })) gErro('Cada quantidade deve ficar entre 0 e 99.');
     var total = c + k + b;
     if (total < 1) gErro('Informe ao menos uma peça entregue.');
-    var reg = { pessoa_id:p.id, data_entrega:data, quantidade:total, qtd_camisas:c, qtd_calcas:k, qtd_blusas:b };
+    var reg = { pessoa_id:escolhido.id, data_entrega:data, quantidade:total, qtd_camisas:c, qtd_calcas:k, qtd_blusas:b };
     reg.itens = textoItens(reg);
     var nova = await consulta(function(){ return sb.from('entregas_uniforme').insert(reg).select('*').single(); });
     S.entregas.unshift(nova); montarFiltrosUni(); renderUniformes();
     toast('Entrega registrada. Baixando o termo…');
     await gerarTermoPdf(nova);
   } });
+
+  // ---- campo de busca do colaborador (substitui o datalist do navegador) ----
+  var inp = document.getElementById('cb-in'), lista = document.getElementById('cb-lista'), sel = document.getElementById('cb-sel');
+  function sub(p){ return ['Matrícula ' + (matCurta(p) || '—'), nomeFilialColab(p.filial_id), capitalizarCargo(p.cargo)].filter(Boolean).join(' · '); }
+  function desenhar(){
+    var q = normTxt(inp.value);
+    achados = ativos.filter(function(p){ return !q || normTxt([p.nome, matCurta(p), p.matricula, nomeFilialColab(p.filial_id), p.cargo].join(' ')).indexOf(q) >= 0; });
+    var total = achados.length; achados = achados.slice(0, 8);
+    if (ativoIdx >= achados.length) ativoIdx = achados.length - 1;
+    lista.innerHTML = achados.length
+      ? achados.map(function(p, i){
+          return '<div class="combo-item' + (i === ativoIdx ? ' ativo' : '') + '" role="option" data-i="' + i + '">' + avatarPessoa(p) +
+            '<div class="combo-txt"><div class="n">' + esc(p.nome) + '</div><div class="s">' + esc(sub(p)) + '</div></div></div>';
+        }).join('') + (total > achados.length ? '<div class="combo-mais">+ ' + (total - achados.length) + ' resultados. Continue digitando para filtrar.</div>' : '')
+      : '<div class="combo-mais">Ninguém encontrado.</div>';
+    lista.hidden = false; inp.setAttribute('aria-expanded', 'true');
+  }
+  function fechar(){ lista.hidden = true; inp.setAttribute('aria-expanded', 'false'); }
+  function escolher(p){
+    escolhido = p; inp.value = p.nome; fechar();
+    sel.innerHTML = '<div class="combo-ok">' + avatarPessoa(p) + '<div class="combo-txt"><div class="n">' + esc(p.nome) + '</div><div class="s">' + esc(sub(p)) + '</div></div><svg><use href="#i-ok"/></svg></div>';
+    sel.hidden = false;
+  }
+  inp.addEventListener('focus', function(){ ativoIdx = -1; desenhar(); });
+  inp.addEventListener('input', function(){ escolhido = null; sel.hidden = true; ativoIdx = 0; desenhar(); });
+  inp.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (lista.hidden) desenhar(); ativoIdx = Math.min(achados.length - 1, ativoIdx + 1); desenhar(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); ativoIdx = Math.max(0, ativoIdx - 1); desenhar(); }
+    else if (e.key === 'Enter' && !lista.hidden && achados.length) { e.preventDefault(); escolher(achados[Math.max(0, ativoIdx)]); }
+    else if (e.key === 'Escape' && !lista.hidden) { e.stopPropagation(); fechar(); }
+  });
+  lista.addEventListener('mousedown', function(e){ // mousedown: escolhe antes de o campo perder o foco
+    var it = e.target.closest('.combo-item'); if (!it) return; e.preventDefault(); escolher(achados[+it.dataset.i]);
+  });
+  inp.addEventListener('blur', function(){ setTimeout(fechar, 120); });
+
+  // ---- quantidades com − / + e total ----
+  var corpoEl = document.getElementById('g-corpo');
+  function totalizar(){ document.getElementById('uni-total').textContent = tipos.reduce(function(a, t){ return a + (parseInt(gv(t[0]), 10) || 0); }, 0); }
+  corpoEl.addEventListener('click', function(e){
+    var b = e.target.closest('.stepper button'); if (!b) return;
+    var i = b.parentNode.querySelector('input'), v = (parseInt(i.value, 10) || 0) + (+b.dataset.d);
+    i.value = Math.max(0, Math.min(99, v)); totalizar();
+  });
+  corpoEl.addEventListener('input', function(e){ if (e.target.matches('.stepper input')) totalizar(); });
+  setTimeout(function(){ inp.focus(); }, 40);
 }
 
 /* ---- anexar assinado / cancelar / ver ---- */
