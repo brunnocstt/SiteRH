@@ -376,6 +376,8 @@ td.num, th.num{ text-align:center; font-variant-numeric:tabular-nums; }
 .uni-total span{ font-size:.78rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
 .uni-total strong{ font-size:1.5rem; font-weight:800; line-height:1; color:var(--accent); font-variant-numeric:tabular-nums; }
 @media (max-width:420px){ .steppers{ grid-template-columns:1fr; } }
+.rm-atv{ all:unset; box-sizing:border-box; width:28px; height:28px; border-radius:10px; text-align:center; line-height:28px; font-size:1.1rem; color:var(--muted-2); cursor:pointer; }
+.rm-atv:hover{ background:var(--bad-soft); color:var(--bad); }
 /* gráfico mensal */
 .mes-topo{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
 .mes-topo label{ display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--muted); }
@@ -2172,6 +2174,7 @@ function renderTreinColab(pid){
 S.ativEtapa = {};      // atividade do workflow -> etapa do funil
 S.imp = null;          // estado da importação aberta
 function normTxt(s){ return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim(); }
+function normAtv(a){ return String(a == null ? '' : a).trim().toUpperCase().replace(/\s+/g, '_'); }
 function dataDeCelula(v){
   if (v == null || v === '') return null;
   var p2 = function(n){ return String(n).padStart(2, '0'); };
@@ -2214,7 +2217,7 @@ async function lerPlanilhas(files){
         var orc = normTxt(g(r, 'orcado'));
         porProcesso[proc] = {
           processo: proc, tipo_processo: tipo, abertura: abertura, status: status, status_estranho: statusEstranho,
-          atividade: g(r, 'atividade atual') ? String(g(r, 'atividade atual')).trim() : null,
+          atividade: g(r, 'atividade atual') ? normAtv(g(r, 'atividade atual')) : null,
           quantidade: Number(g(r, 'quantidade de vagas')) || 1,
           cargo: cargo ? capitalizarCargo(String(cargo).trim()) : null,
           cargo_origem: tipo === 'movimentacao' && novoCargo && cargoAtual ? capitalizarCargo(String(cargoAtual).trim()) : null,
@@ -2756,17 +2759,41 @@ function renderConfig(){
 function renderCfgAtividades(){
   var adm = S.nivel === 'admin', el = document.getElementById('cfg-atv'); if (!el) return;
   var nomes = Object.keys(S.ativEtapa).sort();
-  el.innerHTML = '<h2>Atividades do processo → etapa</h2><p class="c-sub">Na importação da planilha, a atividade atual do workflow define a etapa da vaga no funil.</p>' +
+  var opEtapas = function(sel){ return ETAPAS.slice(0, 6).map(function(e){ return '<option value="' + e[0] + '"' + (sel === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join(''); };
+  el.innerHTML = '<h2>Atividades do processo → etapa</h2><p class="c-sub">Na importação da planilha, a atividade atual do workflow define a etapa da vaga no funil. Use o nome exatamente como vem na planilha.</p>' +
     (nomes.length ? nomes.map(function(a){
-      return '<div class="cfg-linha" style="grid-template-columns:1fr 170px"><div class="t" style="word-break:break-all;font-size:.76rem">' + esc(a) + '</div><select class="sel-mini" data-atv-cfg="' + esc(a) + '"' + (adm ? '' : ' disabled') + '>' +
-        ETAPAS.slice(0, 6).map(function(e){ return '<option value="' + e[0] + '"' + (S.ativEtapa[a] === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join('') + '</select></div>';
-    }).join('') : '<div class="vazio">Ainda nenhuma atividade. Elas aparecem na primeira importação.</div>');
-  if (adm) el.onchange = async function(ev){
+      return '<div class="cfg-linha" style="grid-template-columns:1fr 150px 34px"><div class="t" style="word-break:break-all;font-size:.76rem">' + esc(a) + '</div>' +
+        '<select class="sel-mini" data-atv-cfg="' + esc(a) + '"' + (adm ? '' : ' disabled') + '>' + opEtapas(S.ativEtapa[a]) + '</select>' +
+        (adm ? '<button class="rm-atv" data-atv-del="' + esc(a) + '" title="Remover" aria-label="Remover">×</button>' : '<span></span>') + '</div>';
+    }).join('') : '<div class="vazio">Ainda nenhuma atividade. Elas aparecem na primeira importação.</div>') +
+    (adm ? '<div class="sec-tit" style="margin-top:16px">Nova atividade</div><div class="cfg-linha" style="grid-template-columns:1fr 150px;border-bottom:none;padding-bottom:4px"><input id="atv-nova" type="text" maxlength="120" placeholder="Ex.: ENTREVISTAR_CANDIDATO" style="text-align:left;text-transform:uppercase"><select class="sel-mini" id="atv-etapa">' + opEtapas('solicitada') + '</select></div>' +
+      '<div class="cfg-acoes" style="margin-top:6px"><button class="btn btn-primary" id="atv-add">Adicionar atividade</button></div>' : '');
+  if (!adm) return;
+  el.onchange = async function(ev){
     var sel = ev.target.closest('select[data-atv-cfg]'); if (!sel) return;
     try {
       await consulta(function(){ return sb.from('atividade_etapa').upsert({ atividade: sel.dataset.atvCfg, etapa: sel.value }); });
       S.ativEtapa[sel.dataset.atvCfg] = sel.value; toast('Etapa salva. Vale a partir da próxima importação.');
     } catch (e) { toast('Não foi possível salvar: ' + (e.message || e), true); }
+  };
+  el.onclick = async function(ev){
+    var del = ev.target.closest('[data-atv-del]');
+    if (del) {
+      var nome = del.dataset.atvDel;
+      if (!window.confirm('Remover a atividade ' + nome + '? Vagas já importadas continuam como estão; numa próxima importação ela será perguntada de novo.')) return;
+      try { await consulta(function(){ return sb.from('atividade_etapa').delete().eq('atividade', nome).select('atividade'); }); delete S.ativEtapa[nome]; renderCfgAtividades(); toast('Atividade removida.'); }
+      catch (e) { toast('Não foi possível remover: ' + (e.message || e), true); }
+      return;
+    }
+    if (!ev.target.closest('#atv-add')) return;
+    var nova = normAtv(document.getElementById('atv-nova').value);
+    if (!nova) { toast('Digite o nome da atividade.', true); return; }
+    if (S.ativEtapa[nova]) { toast('Essa atividade já está cadastrada.', true); return; }
+    try {
+      var et = document.getElementById('atv-etapa').value;
+      await consulta(function(){ return sb.from('atividade_etapa').insert({ atividade: nova, etapa: et }); });
+      S.ativEtapa[nova] = et; renderCfgAtividades(); toast('Atividade adicionada.');
+    } catch (e) { toast('Não foi possível adicionar: ' + (e.message || e), true); }
   };
 }
 async function salvarConfig(){
